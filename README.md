@@ -16,6 +16,7 @@ A browser-based position sizing and trading risk workspace for planning Indian-m
   - Manual completed-trade records and delete action
   - Gross P&L, estimated costs and net P&L
   - Weekly/monthly net P&L, win rate, profit factor, average win/loss and closed-trade drawdown
+  - Equity curve, best/worst trading days, long-versus-short results and symbol-wise performance
   - CSV and Excel exports, plus full JSON backup and restore
 
 ## Cost estimator
