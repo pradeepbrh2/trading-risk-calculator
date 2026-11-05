@@ -421,7 +421,7 @@ return `<details class="card instrument" data-id="${inst.id}">
 <div class="result">
 <div class="hero"><div class="k">MAXIMUM SHARES / UNITS</div><div class="qty" data-out="qty">—</div><div class="k" data-out="reason">Enter valid trade details</div></div>
 <div class="stats">
-<div class="stat"><div class="k">Planned stop-loss risk</div><div class="v" data-out="actualRisk">—</div></div>
+<div class="stat"><div class="k">Estimated stop-loss loss incl. charges</div><div class="v" data-out="actualRisk">—</div></div>
 <div class="stat"><div class="k">Position value</div><div class="v" data-out="position">—</div></div>
 <div class="stat"><div class="k">Estimated margin used</div><div class="v" data-out="margin">—</div></div>
 <div class="stat"><div class="k">Capital left after margin</div><div class="v" data-out="left">—</div></div>
@@ -447,9 +447,14 @@ if(r.error){warning.style.display='block';warning.textContent=r.error;card.query
 warning.style.display='none';
 const put=(key,value)=>{const node=card.querySelector(`[data-out="${key}"]`);if(node)node.textContent=value;};
 put('qty',r.qty.toLocaleString('en-IN'));put('reason',r.qty===0?'No unit fits both limits':r.riskQty<r.marginQty?'Quantity limited by risk budget':r.marginQty<r.riskQty?'Quantity limited by available margin':'Both limits give the same quantity');
-put('actualRisk',money(r.actualRisk));put('position',money(r.position));put('margin',money(r.margin));put('left',money(r.c.capital-r.margin));
+const stopCharges=r.qty?estimateTradeCharges({side:inst.side,qty:r.qty,entry:r.entry,exit:r.sl}).total:0;
+const target2Charges=r.qty?estimateTradeCharges({side:inst.side,qty:r.qty,entry:r.entry,exit:r.target2}).total:0;
+const target3Charges=r.qty?estimateTradeCharges({side:inst.side,qty:r.qty,entry:r.entry,exit:r.target3}).total:0;
+put('actualRisk',money(r.actualRisk+stopCharges));put('position',money(r.position));put('margin',money(r.margin));put('left',money(r.c.capital-r.margin));
 put('usable',money(r.c.usable));put('power',money(r.c.buyingPower));put('marginQty',r.marginQty.toLocaleString('en-IN'));put('riskQty',r.riskQty.toLocaleString('en-IN'));
-put('target2',money(r.target2));put('target3',money(r.target3));put('profit2','Gross profit: '+money(r.actualRisk*2));put('profit3','Gross profit: '+money(r.actualRisk*3));
+put('target2',money(r.target2));put('target3',money(r.target3));
+put('profit2','Net after est. charges: '+money(r.actualRisk*2-target2Charges)+' · charges '+money(target2Charges));
+put('profit3','Net after est. charges: '+money(r.actualRisk*3-target3Charges)+' · charges '+money(target3Charges));
 card.querySelector('[data-summary]').textContent=r.qty+' units · '+money(r.actualRisk)+' risk';
 }
 function renderInstruments(){
@@ -677,7 +682,7 @@ function tradeGross(t){return Number(t.pnl??((t.side==='long'?t.exit-t.entry:t.e
 function tradeNet(t){return tradeGross(t)-estimateTradeCharges(t).total;}
 function bindCharges(){
  const ids={chargeBrokerage:'brokerage',chargeStt:'stt',chargeExchange:'exchange',chargeStamp:'stamp',chargeGst:'gst',chargeSebi:'sebi'};
- Object.entries(ids).forEach(([id,key])=>{const el=$(id);el.value=chargeSettings[key];el.addEventListener('input',()=>{chargeSettings[key]=String(Math.max(0,Number(el.value)||0));saveCharges();renderJournal();renderRiskDashboard();});});
+ Object.entries(ids).forEach(([id,key])=>{const el=$(id);el.value=chargeSettings[key];el.addEventListener('input',()=>{chargeSettings[key]=String(Math.max(0,Number(el.value)||0));saveCharges();renderJournal();renderRiskDashboard();refreshAll();});});
 }
 function renderJournal(){
  const today=localISODate(),todays=journalTrades.filter(t=>t.date===today);
