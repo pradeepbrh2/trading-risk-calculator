@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0b1220"><title>Trading Risk Calculator</title>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 <style>
 :root{color-scheme:dark;--bg:#0b1220;--panel:#111c2e;--muted:#91a0b8;--text:#edf3ff;--line:#26364f;--blue:#4f8cff;--green:#35c98a;--red:#ff7777}
 *{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#0b1220,#101b2d);font:15px/1.5 Segoe UI,Arial,sans-serif;color:var(--text);min-height:100vh}.wrap{max-width:1000px;margin:30px auto;padding:0 18px}
@@ -32,7 +33,7 @@ header{display:flex;justify-content:space-between;align-items:center;gap:12px;ma
 </section>
 
 <section class="card instrument-list"><div class="instrument-list-head"><div><h2>Instrument</h2><div class="hint" id="count">1 instrument</div></div><button class="add-btn" id="addInstrument" type="button">＋ Add instrument</button></div><div id="instruments"></div></section>
-<div class="toolbar"><span class="hint">Your settings and instrument calculations are saved in this browser.</span><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="add-btn" id="exportExcel" type="button">↓ Download Excel (.xls)</button><button class="reset-btn" id="resetAll" type="button">Reset all</button></div></div>
+<div class="toolbar"><span class="hint">Your settings and instrument calculations are saved in this browser.</span><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="add-btn" id="exportExcel" type="button">↓ Download Excel (.xlsx)</button><button class="reset-btn" id="resetAll" type="button">Reset all</button></div></div>
 <div class="note">Position sizing is an estimate. Actual MIS margin varies by stock and broker. Calculations exclude brokerage, taxes, other charges and slippage. Stop-loss execution can be worse than the planned price.</div>
 <div class="footer">Runs locally in your browser · No broker login or trading data is collected.</div>
 </main>
@@ -162,81 +163,151 @@ updateOne(card,inst);
 function refreshAll(){settingsFromUI();renderSettings();document.querySelectorAll('.instrument').forEach(card=>{const inst=state.instruments.find(x=>x.id===Number(card.dataset.id));if(inst)updateOne(card,inst);});persist();}
 function setMode(which,mode){state.settings[which+'Mode']=mode;renderSettings();persist();refreshAll();}
 
-function exportExcel(){
+
+async function exportExcel(){
+  const button = $('exportExcel');
+  const originalText = button.textContent;
+  button.disabled = true;
+  button.textContent = 'Preparing Excel...';
   try {
+    if (!window.ExcelJS) throw new Error('Excel export library could not load. Check your internet connection and try again.');
     settingsFromUI();
     const c = computedSettings();
-    const dateText = new Date().toLocaleString('en-IN');
-    const esc = value => String(value ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    const fmt = value => Number(value || 0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
-    const instruments = state.instruments.map(inst => {
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = 'Position Sizing & Risk Calculator';
+    workbook.created = new Date();
+    workbook.modified = new Date();
+
+    const ws = workbook.addWorksheet('Position Sizing', {
+      views: [{ state: 'frozen', ySplit: 11, showGridLines: false }]
+    });
+
+    ws.columns = [
+      { header: 'Instrument', key: 'instrument', width: 19 },
+      { header: 'Direction', key: 'direction', width: 15 },
+      { header: 'Entry (₹)', key: 'entry', width: 14 },
+      { header: 'Stop-loss (₹)', key: 'sl', width: 16 },
+      { header: 'Max quantity', key: 'qty', width: 15 },
+      { header: 'Planned risk (₹)', key: 'risk', width: 18 },
+      { header: 'Position value (₹)', key: 'position', width: 20 },
+      { header: 'Estimated margin (₹)', key: 'margin', width: 21 },
+      { header: 'Target 1:2 (₹)', key: 'target2', width: 16 },
+      { header: 'Target 1:3 (₹)', key: 'target3', width: 16 },
+      { header: 'Gross profit 1:2 (₹)', key: 'profit2', width: 21 },
+      { header: 'Gross profit 1:3 (₹)', key: 'profit3', width: 21 }
+    ];
+
+    ws.mergeCells('A1:L1');
+    ws.getCell('A1').value = 'POSITION SIZING & RISK CALCULATOR';
+    ws.getCell('A1').font = { name: 'Aptos Display', size: 20, bold: true, color: { argb: 'FFFFFFFF' } };
+    ws.getCell('A1').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF17365D' } };
+    ws.getCell('A1').alignment = { vertical: 'middle', horizontal: 'left' };
+    ws.getRow(1).height = 38;
+
+    ws.mergeCells('A2:L2');
+    ws.getCell('A2').value = 'Calculation summary  •  Exported ' + new Date().toLocaleString('en-IN');
+    ws.getCell('A2').font = { size: 10, italic: true, color: { argb: 'FF52657D' } };
+    ws.getCell('A2').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEAF1F8' } };
+    ws.getRow(2).height = 22;
+
+    ws.mergeCells('A4:L4');
+    ws.getCell('A4').value = 'ACCOUNT SUMMARY';
+    ws.getCell('A4').font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } };
+    ws.getCell('A4').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF244A73' } };
+    ws.getRow(4).height = 23;
+
+    const summary = [
+      ['Total capital', c.capital, 'Safety reserve', c.reserve],
+      ['Usable capital', c.usable, 'Maximum risk / trade', c.risk],
+      ['Assumed leverage', c.leverage + '×', 'Instrument count', state.instruments.length]
+    ];
+    summary.forEach((values, idx) => {
+      const row = ws.getRow(5 + idx);
+      row.values = values;
+      [1,3].forEach(col => {
+        row.getCell(col).font = { bold: true, color: { argb: 'FF40536A' } };
+        row.getCell(col).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEDF3F8' } };
+      });
+      [2,4].forEach(col => {
+        row.getCell(col).font = { bold: true, color: { argb: 'FF17365D' } };
+        row.getCell(col).numFmt = typeof row.getCell(col).value === 'number' ? '₹#,##0.00' : '@';
+      });
+      row.eachCell(cell => {
+        cell.border = { bottom: { style: 'thin', color: { argb: 'FFD7E0EA' } } };
+        cell.alignment = { vertical: 'middle', horizontal: cell.col % 2 === 0 ? 'right' : 'left' };
+      });
+      row.height = 23;
+    });
+
+    ws.mergeCells('A10:L10');
+    ws.getCell('A10').value = 'INSTRUMENT POSITION SIZING';
+    ws.getCell('A10').font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } };
+    ws.getCell('A10').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF244A73' } };
+    ws.getRow(10).height = 24;
+
+    const headerRow = ws.getRow(11);
+    headerRow.values = ws.columns.map(col => col.header);
+    headerRow.height = 34;
+    headerRow.eachCell(cell => {
+      cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 10 };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF315F8C' } };
+      cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+      cell.border = { top: { style: 'thin', color: { argb: 'FF1C3D60' } }, bottom: { style: 'thin', color: { argb: 'FF1C3D60' } } };
+    });
+
+    state.instruments.forEach(inst => {
       const r = calcInstrument(inst);
-      if (r.error) return `<tr><td>${esc(inst.name || 'Unnamed')}</td><td>${inst.side === 'long' ? 'Buy / Long' : 'Sell / Short'}</td><td>${esc(inst.entry)}</td><td>${esc(inst.sl)}</td><td colspan="8" class="status-error">${esc(r.error)}</td></tr>`;
-      return `<tr>
-        <td class="name">${esc(inst.name)}</td>
-        <td>${inst.side === 'long' ? 'Buy / Long' : 'Sell / Short'}</td>
-        <td class="num">${fmt(r.entry)}</td>
-        <td class="num">${fmt(r.sl)}</td>
-        <td class="num qty">${r.qty}</td>
-        <td class="num">${fmt(r.actualRisk)}</td>
-        <td class="num">${fmt(r.position)}</td>
-        <td class="num">${fmt(r.margin)}</td>
-        <td class="num target">${fmt(r.target2)}</td>
-        <td class="num target">${fmt(r.target3)}</td>
-        <td class="num profit">${fmt(r.qty*Math.abs(r.target2-r.entry))}</td>
-        <td class="num profit">${fmt(r.qty*Math.abs(r.target3-r.entry))}</td>
-      </tr>`;
-    }).join('');
-    const htmlFile = `<!doctype html>
-<html><head><meta charset="utf-8">
-<style>
-body{font-family:Calibri,Arial,sans-serif;color:#243247;font-size:11pt}
-table{border-collapse:collapse}
-.title{background:#142b4a;color:#fff;font-size:20pt;font-weight:bold;padding:16px 12px}
-.subtitle{background:#eaf1f8;color:#52657d;font-size:10pt;padding:8px 12px}
-.section{background:#244a73;color:#fff;font-weight:bold;font-size:12pt;padding:9px}
-.label{background:#edf3f8;color:#40536a;font-weight:bold;padding:8px;border:1px solid #d7e0ea}
-.value{background:#fff;color:#172b46;font-weight:bold;padding:8px;border:1px solid #d7e0ea}
-thead th{background:#244a73;color:#fff;font-weight:bold;padding:10px 8px;border:1px solid #1c3d60;text-align:center;white-space:nowrap}
-tbody td{padding:9px 8px;border:1px solid #d7e0ea}
-tbody tr:nth-child(even){background:#f2f6fa}
-.name{font-weight:bold;color:#173d68}
-.num{text-align:right;mso-number-format:"\\#,##0.00"}
-.qty{text-align:center;font-weight:bold;background:#e6f4ed;color:#176342}
-.target{color:#245a91;font-weight:bold}
-.profit{color:#16734d;font-weight:bold}
-.status-error{color:#a12c37;background:#fff0f0}
-.note{color:#6b7b90;font-style:italic;padding:8px}
-</style></head><body>
-<table>
-<col width="145"><col width="105"><col width="90"><col width="95"><col width="95"><col width="110"><col width="120"><col width="115"><col width="100"><col width="100"><col width="125"><col width="125">
-<tr><td class="title" colspan="12">POSITION SIZING &amp; RISK CALCULATOR</td></tr>
-<tr><td class="subtitle" colspan="12">Calculation summary • Exported ${esc(dateText)}</td></tr>
-<tr><td colspan="12"></td></tr>
-<tr><td class="section" colspan="4">ACCOUNT SUMMARY</td></tr>
-<tr><td class="label">Total capital</td><td class="value">₹${fmt(c.capital)}</td><td class="label">Safety reserve</td><td class="value">₹${fmt(c.reserve)}</td></tr>
-<tr><td class="label">Usable capital</td><td class="value">₹${fmt(c.usable)}</td><td class="label">Maximum risk / trade</td><td class="value">₹${fmt(c.risk)}</td></tr>
-<tr><td class="label">Assumed leverage</td><td class="value">${esc(c.leverage)}×</td><td class="label">Instrument count</td><td class="value">${state.instruments.length}</td></tr>
-<tr><td colspan="12"></td></tr>
-<tr><td class="section" colspan="12">INSTRUMENT POSITION SIZING</td></tr>
-<thead><tr>
-<th>Instrument</th><th>Direction</th><th>Entry (₹)</th><th>Stop-loss (₹)</th><th>Max quantity</th><th>Planned risk (₹)</th><th>Position value (₹)</th><th>Est. margin (₹)</th><th>Target 1:2 (₹)</th><th>Target 1:3 (₹)</th><th>Gross profit @ 1:2 (₹)</th><th>Gross profit @ 1:3 (₹)</th>
-</tr></thead>
-<tbody>${instruments}</tbody>
-<tr><td class="note" colspan="12">Estimates only. Actual margin, charges, slippage and execution may differ. Gross profit excludes charges.</td></tr>
-</table></body></html>`;
-    const blob = new Blob(['\ufeff', htmlFile], {type:'application/vnd.ms-excel;charset=utf-8;'});
+      let values;
+      if (r.error) {
+        values = [inst.name || 'Unnamed', inst.side === 'long' ? 'Buy / Long' : 'Sell / Short', inst.entry || '', inst.sl || '', r.error, '', '', '', '', '', '', ''];
+      } else {
+        values = [inst.name, inst.side === 'long' ? 'Buy / Long' : 'Sell / Short', r.entry, r.sl, r.qty, r.actualRisk, r.position, r.margin, r.target2, r.target3, r.qty * Math.abs(r.target2-r.entry), r.qty * Math.abs(r.target3-r.entry)];
+      }
+      const row = ws.addRow(values);
+      row.height = 25;
+      row.eachCell(cell => {
+        cell.border = { bottom: { style: 'hair', color: { argb: 'FFD7E0EA' } } };
+        cell.alignment = { vertical: 'middle', horizontal: cell.col <= 2 ? 'left' : 'right' };
+        if (row.number % 2 === 0) cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF2F6FA' } };
+      });
+      if (!r.error) {
+        row.getCell(1).font = { bold: true, color: { argb: 'FF173D68' } };
+        row.getCell(5).font = { bold: true, color: { argb: 'FF176342' } };
+        row.getCell(5).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE6F4ED' } };
+        [3,4,6,7,8,9,10,11,12].forEach(col => row.getCell(col).numFmt = '₹#,##0.00');
+        row.getCell(5).numFmt = '#,##0';
+        [9,10].forEach(col => row.getCell(col).font = { bold: true, color: { argb: 'FF245A91' } });
+        [11,12].forEach(col => row.getCell(col).font = { bold: true, color: { argb: 'FF16734D' } });
+      } else {
+        row.getCell(5).font = { color: { argb: 'FFA12C37' }, italic: true };
+      }
+    });
+
+    const noteRow = ws.addRow([]);
+    const noteIndex = noteRow.number + 1;
+    ws.mergeCells(`A${noteIndex}:L${noteIndex}`);
+    ws.getCell(`A${noteIndex}`).value = 'Estimates only. Actual margin, charges, slippage and execution may differ. Gross profit excludes charges.';
+    ws.getCell(`A${noteIndex}`).font = { italic: true, color: { argb: 'FF6B7B90' }, size: 9 };
+    ws.getCell(`A${noteIndex}`).alignment = { wrapText: true };
+    ws.getRow(noteIndex).height = 22;
+    ws.autoFilter = { from: 'A11', to: `L${Math.max(11, 11 + state.instruments.length)}` };
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'position-sizing-report-' + new Date().toISOString().slice(0,10) + '.xls';
+    a.download = 'position-sizing-report-' + new Date().toISOString().slice(0,10) + '.xlsx';
     a.style.display = 'none';
     document.body.appendChild(a);
     a.click();
     a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    setTimeout(() => URL.revokeObjectURL(url), 2500);
   } catch (error) {
     alert('Excel export failed: ' + error.message);
+  } finally {
+    button.disabled = false;
+    button.textContent = '↓ Download Excel (.xlsx)';
   }
 }
 
