@@ -696,7 +696,8 @@ function renderJournal(){
  const now=new Date(),monthKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
  const weekStart=new Date(now.getFullYear(),now.getMonth(),now.getDate());weekStart.setDate(weekStart.getDate()-((weekStart.getDay()+6)%7));
  const weekKey=weekStart.getFullYear()+'-'+String(weekStart.getMonth()+1).padStart(2,'0')+'-'+String(weekStart.getDate()).padStart(2,'0');
- const weekly=ordered.filter(t=>t.date>=weekKey).reduce((a,t)=>a+tradeNet(t),0);
+ const todayKey=localISODate();
+ const weekly=ordered.filter(t=>t.date>=weekKey&&t.date<=todayKey).reduce((a,t)=>a+tradeNet(t),0);
  const monthly=ordered.filter(t=>t.date.startsWith(monthKey)).reduce((a,t)=>a+tradeNet(t),0);
  $('journalAnalytics').innerHTML=[
   ['This week net P&L',journalMoney(weekly)],['This month net P&L',journalMoney(monthly)],['Profit factor',factor],
