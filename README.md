@@ -31,6 +31,13 @@ Estimated costs are saved with each newly recorded journal trade so changing the
 - Tap green candles to score, avoid red candles, and beat your personal best.
 - Best score is stored locally in the browser. The game uses no market feed and has no effect on calculator data.
 
+## Guides and site information
+
+- [How to calculate position size for intraday trading](https://pradeepbrh2.github.io/trading-risk-calculator/guides/position-sizing.html)
+- [Risk-reward ratio explained](https://pradeepbrh2.github.io/trading-risk-calculator/guides/risk-reward-ratio.html)
+- [Trading charges in India](https://pradeepbrh2.github.io/trading-risk-calculator/guides/trading-costs.html)
+- [About](https://pradeepbrh2.github.io/trading-risk-calculator/about.html) · [Contact](https://pradeepbrh2.github.io/trading-risk-calculator/contact.html) · [Privacy](https://pradeepbrh2.github.io/trading-risk-calculator/privacy.html) · [Terms](https://pradeepbrh2.github.io/trading-risk-calculator/terms.html) · [Risk disclaimer](https://pradeepbrh2.github.io/trading-risk-calculator/risk-disclaimer.html)
+
 ## Data and privacy
 
 - Calculator settings, charge profile, risk controls and journal are stored in this browser's local storage.
