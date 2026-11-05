@@ -592,6 +592,26 @@ async function exportExcel(){
     ws.getRow(noteIndex).height = 22;
     ws.autoFilter = { from: 'A11', to: `L${Math.max(11, 11 + state.instruments.length)}` };
 
+    const journalSheet = workbook.addWorksheet('Trade Journal', { views: [{ state: 'frozen', ySplit: 1, showGridLines: false }] });
+    journalSheet.columns = [
+      { header: 'Date', key: 'date', width: 14 },
+      { header: 'Instrument', key: 'symbol', width: 18 },
+      { header: 'Direction', key: 'side', width: 13 },
+      { header: 'Quantity', key: 'qty', width: 12 },
+      { header: 'Entry Price (₹)', key: 'entry', width: 17 },
+      { header: 'Exit Price (₹)', key: 'exit', width: 17 },
+      { header: 'Gross P&L (₹)', key: 'pnl', width: 18 },
+      { header: 'Notes', key: 'notes', width: 36 }
+    ];
+    journalSheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    journalSheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF183451' } };
+    journalSheet.getRow(1).alignment = { vertical: 'middle' };
+    (journalTrades || []).forEach(t => {
+      const row = journalSheet.addRow({ date: t.date, symbol: t.symbol, side: t.side === 'long' ? 'Long' : 'Short', qty: t.qty, entry: t.entry, exit: t.exit, pnl: t.pnl, notes: t.notes });
+      row.getCell(7).font = { color: { argb: t.pnl >= 0 ? 'FF16734D' : 'FFA12C37' } };
+    });
+    journalSheet.autoFilter = { from: 'A1', to: 'H' + Math.max(1, journalSheet.rowCount) };
+    if (!journalTrades.length) journalSheet.addRow(['No journal trades recorded yet.']);
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     const url = URL.createObjectURL(blob);
