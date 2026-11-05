@@ -593,12 +593,13 @@ async function exportExcel(){
 
 const JOURNAL_STORE='tradingRiskCalculatorJournalV1';
 let journalTrades=[];
+function localISODate(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function loadJournal(){try{const v=JSON.parse(localStorage.getItem(JOURNAL_STORE)||'[]');if(Array.isArray(v))journalTrades=v;}catch(e){journalTrades=[];}}
 function saveJournal(){try{localStorage.setItem(JOURNAL_STORE,JSON.stringify(journalTrades));}catch(e){alert('Could not save journal data. Browser storage may be full or disabled.');}}
 function journalMoney(n){return '₹'+Number(n).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function journalEscape(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function renderJournal(){
- const today=new Date().toLocaleDateString('en-CA');
+ const today=localISODate();
  const todays=journalTrades.filter(t=>t.date===today),total=todays.reduce((a,t)=>a+t.pnl,0),wins=journalTrades.filter(t=>t.pnl>0).length;
  const winRate=journalTrades.length?Math.round(wins/journalTrades.length*100):0;
  $('journalMetrics').innerHTML=[
@@ -623,7 +624,7 @@ function exportJournalCsv(){
  const quote=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
  const lines=[cols,...journalTrades.map(t=>[t.date,t.symbol,t.side,t.qty,t.entry,t.exit,t.pnl,t.notes])].map(r=>r.map(quote).join(','));
  const blob=new Blob(['\uFEFF'+lines.join('\r\n')],{type:'text/csv;charset=utf-8;'});
- const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='trade-journal-'+new Date().toISOString().slice(0,10)+'.csv';a.click();URL.revokeObjectURL(url);
+ const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='trade-journal-'+new Date().toISOString().slice(0,10)+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);
 }
 
 function bindSettings(){
@@ -642,6 +643,6 @@ $('resetAll').onclick=()=>{if(confirm('Reset all settings and remove added instr
 $('getStarted').addEventListener('click',()=>{$('calculator').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});});
 $('skipWelcome').addEventListener('click',()=>{$('welcomeHero').classList.add('is-hidden');});
 load();renderSettings();bindSettings();renderInstruments();
-loadJournal();$('journalDate').value=new Date().toLocaleDateString('en-CA');$('saveJournalTrade').addEventListener('click',addJournalTrade);$('clearJournalForm').addEventListener('click',clearJournalForm);$('exportJournalCsv').addEventListener('click',exportJournalCsv);renderJournal();
+loadJournal();$('journalDate').value=localISODate();$('saveJournalTrade').addEventListener('click',addJournalTrade);$('clearJournalForm').addEventListener('click',clearJournalForm);$('exportJournalCsv').addEventListener('click',exportJournalCsv);renderJournal();
 })();
 </script></body></html>
