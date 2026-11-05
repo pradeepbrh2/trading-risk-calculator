@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://pradeepbrh2.github.io/trading-risk-calculator/sitemap.xml

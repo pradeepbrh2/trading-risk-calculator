@@ -1,0 +1,10 @@
+{
+  "name": "Position Sizing & Risk Calculator",
+  "short_name": "Position Calculator",
+  "description": "Free position sizing, intraday risk and reward calculator for Indian markets.",
+  "start_url": "/trading-risk-calculator/",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#0b1220",
+  "icons": []
+}
