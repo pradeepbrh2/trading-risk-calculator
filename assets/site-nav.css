@@ -20,7 +20,7 @@ html{overflow-x:clip}body{padding-left:258px!important;transition:padding-left .
   .panel,.card{min-width:0}
   input,select,textarea{font-size:16px!important;max-width:100%}
   button,.btn,[role=button]{min-height:44px}
-  .btn{width:100%;justify-content:center}
+  .panel > .btn{width:100%;justify-content:center}
   #site-sidebar a.nav-link{min-height:44px}
 }
 @media(max-width:360px){
