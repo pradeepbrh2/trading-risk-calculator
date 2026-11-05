@@ -63,6 +63,19 @@
       "inLanguage": "en-IN"
     },
     {
+      "@type": "HowTo",
+      "@id": "https://pradeepbrh2.github.io/trading-risk-calculator/#howto",
+      "name": "How to calculate position size for intraday trading",
+      "description": "Estimate a whole-share quantity using a risk budget and assumed buying power.",
+      "inLanguage": "en-IN",
+      "step": [
+        {"@type":"HowToStep","name":"Enter capital and reserve","text":"Enter total trading capital and the safety reserve to calculate usable capital."},
+        {"@type":"HowToStep","name":"Set the risk budget and leverage","text":"Choose the maximum risk per trade and enter an assumed leverage for an indicative buying-power estimate."},
+        {"@type":"HowToStep","name":"Enter the trade setup","text":"Add the instrument, choose long or short, and enter the entry and stop-loss prices."},
+        {"@type":"HowToStep","name":"Review the calculated quantity","text":"Use the lower of the risk-based and buying-power-based whole-share quantities. Review planned risk, estimated margin and reward targets."}
+      ]
+    },
+    {
       "@type": "FAQPage",
       "@id": "https://pradeepbrh2.github.io/trading-risk-calculator/#faq",
       "mainEntity": [
@@ -114,6 +127,15 @@
             "text": "No. It is a planning calculator only. It does not connect to a broker, access trading accounts, provide live prices or place orders. Calculations run in the browser."
           }
         }
+        },
+        {
+          "@type": "Question",
+          "name": "Does the calculator guarantee that my loss will not exceed the risk amount?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Planned risk is based on the entered stop-loss price. Gaps, slippage, liquidity and execution delays can cause a larger realised loss."
+          }
+        },
       ]
     }
   ]
@@ -164,6 +186,13 @@ body{background:radial-gradient(ellipse at 78% 7%,rgba(22,91,155,.22),transparen
 @media(max-width:640px){.seo-guide h2,.seo-faq h2{font-size:19px}.seo-guide p,.seo-faq p,.seo-guide ol{font-size:13px}}
 </style>
 <style>.skip-link{position:absolute;left:-9999px;top:8px;background:#fff;color:#111;padding:9px 12px;border-radius:6px;z-index:999}.skip-link:focus{left:8px}</style>
+<style>
+.seo-answer{border-color:#315b86;background:linear-gradient(135deg,rgba(19,52,86,.9),rgba(17,28,46,.98))}
+.seo-answer h2{font-size:20px;margin:0 0 10px;color:#eaf3ff}
+.seo-answer p{font-size:14px;line-height:1.75;color:#c4d3e7;margin:8px 0}
+.seo-answer strong{color:#fff}
+.seo-answer .answer-note{font-size:12px;color:#9eafc7}
+</style>
 </head>
 <body><a class="skip-link" href="#calculator">Skip to calculator</a>
 <main class="wrap">
@@ -205,6 +234,14 @@ body{background:radial-gradient(ellipse at 78% 7%,rgba(22,91,155,.22),transparen
 <div class="note">Position sizing is an estimate. Actual MIS margin varies by stock and broker. Calculations exclude brokerage, taxes, other charges and slippage. Stop-loss execution can be worse than the planned price.</div>
 
 
+<section class="card seo-answer" id="quick-answer" aria-labelledby="quick-answer-title">
+  <h2 id="quick-answer-title">Quick answer: How much quantity should you trade?</h2>
+  <p><strong>Your position quantity should be the smaller of your risk-based quantity and your buying-power-based quantity.</strong> This calculator applies both limits so the planned stop-loss risk stays within your selected budget while the position also fits your assumed buying power.</p>
+  <p><strong>Formula:</strong> Risk-based quantity = maximum risk per trade ÷ absolute (entry price − stop-loss price). Buying-power quantity = (capital − safety reserve) × assumed leverage ÷ entry price. Round both down to whole units, then use the lower quantity.</p>
+  <p><strong>Example:</strong> With ₹10,000 capital, ₹1,000 safety reserve, ₹500 maximum risk, 5× assumed leverage, ₹100 entry and ₹95 stop-loss, risk per share is ₹5. Risk-based quantity is 100 shares; buying-power quantity is 450 shares. The calculator therefore returns 100 shares, with ₹500 planned stop-loss risk before charges and slippage.</p>
+  <p class="answer-note">This is an educational estimate, not a recommendation to buy or sell. Actual margin, execution price and total loss can differ.</p>
+</section>
+
 <section class="card seo-guide" id="how-it-works" aria-labelledby="how-title">
   <h2 id="how-title">Free Position Size Calculator for Intraday Trading in India</h2>
   <p>Use this free position sizing calculator to estimate how many shares or units you can consider for an intraday setup based on your capital, safety reserve, entry price, stop-loss and maximum risk per trade. It is designed for planning Indian equity-market scenarios, including long and short setups.</p>
@@ -239,6 +276,7 @@ body{background:radial-gradient(ellipse at 78% 7%,rgba(22,91,155,.22),transparen
   <details><summary>Are brokerage and taxes included in the target profit?</summary><p>No. The displayed target profits are gross estimates before brokerage, STT, exchange charges, GST, stamp duty, other applicable charges and slippage.</p></details>
   <details><summary>Does this calculator connect to my trading account?</summary><p>No. It does not ask for broker credentials, connect to a trading account, fetch live market prices or place orders. Your calculator settings are saved in your browser.</p></details>
   <details><summary>Can I export the position sizing report?</summary><p>Yes. Use Download Excel to export an Excel workbook containing the account summary and instrument calculations.</p></details>
+<details><summary>Does the calculator guarantee that my loss will not exceed the risk amount?</summary><p>No. The planned risk is based on the entered stop-loss price. Gaps, slippage, liquidity and execution delays can cause a larger realised loss.</p></details>
 </section>
 <div class="footer">Free browser-based position sizing calculator · No broker login or trading data is collected · <a href="#how-it-works">How it works</a> · <a href="#faq">FAQs</a></div>
 </main>
