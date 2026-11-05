@@ -863,6 +863,8 @@ const requestedView=new URLSearchParams(window.location.search).get('view');
 const pathView=window.location.pathname.endsWith('/risk-dashboard.html')?'risk':window.location.pathname.endsWith('/trade-journal.html')?'journal':'calculator';
 const currentView=pathView!=='calculator'?pathView:(['calculator','risk','journal'].includes(requestedView)?requestedView:'calculator');
 document.body.dataset.pageView=currentView;
+const headerLink=document.querySelector('.header-link');
+if(currentView!=='calculator'){headerLink.href='index.html';headerLink.textContent='← Open position calculator';}else{headerLink.href='#calculator';headerLink.textContent='Go to calculator ↓';}
 const viewPanels={calculator:'panel-calculator',risk:'panel-risk',journal:'panel-journal'};
 Object.entries(viewPanels).forEach(([view,id])=>{$(id).hidden=view!==currentView;});
 document.querySelectorAll('[data-view-link]').forEach(link=>{
