@@ -7,6 +7,17 @@
 <title>Candle Catch — Trading Break Mini Game</title>
 <meta name="description" content="Take a quick trading break with Candle Catch, a free 30-second reflex mini-game. Catch green candles, avoid red candles and beat your best score.">
 <meta name="robots" content="index, follow">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Candle Catch — Trading Break Mini Game">
+<meta property="og:description" content="Catch green candles, dodge red ones and challenge your friends in this free 30-second mini game.">
+<meta property="og:url" content="https://pradeepbrh2.github.io/trading-risk-calculator/game.html">
+<meta property="og:image" content="https://pradeepbrh2.github.io/trading-risk-calculator/assets/candle-catch-preview.svg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Candle Catch — Trading Break Mini Game">
+<meta name="twitter:description" content="Catch green candles, dodge red ones and challenge your friends.">
+<meta name="twitter:image" content="https://pradeepbrh2.github.io/trading-risk-calculator/assets/candle-catch-preview.svg">
 <link rel="canonical" href="https://pradeepbrh2.github.io/trading-risk-calculator/game.html">
 <style>
 :root{color-scheme:dark;--bg:#0b1220;--panel:#111d30;--panel2:#16253a;--line:#263951;--text:#edf4fc;--muted:#9aabc0;--green:#36d399;--red:#fb7185;--blue:#79b8ff}
@@ -97,14 +108,47 @@ $('reset').addEventListener('click',()=>{
  clearInterval(timer);clearInterval(spawner);running=false;clearBoard();score=0;timeLeft=30;paintStats();status.textContent='Ready when you are.';shareBtn.disabled=true;startBtn.disabled=false;startBtn.textContent='▶ Start game';
 });
 startBtn.addEventListener('click',start);
+function makeScoreCard(){
+ return new Promise(resolve=>{
+  const canvas=document.createElement('canvas');canvas.width=1200;canvas.height=630;
+  const ctx=canvas.getContext('2d');
+  const bg=ctx.createLinearGradient(0,0,1200,630);bg.addColorStop(0,'#183653');bg.addColorStop(1,'#091321');ctx.fillStyle=bg;ctx.fillRect(0,0,1200,630);
+  ctx.fillStyle='#36d399';ctx.globalAlpha=.08;ctx.beginPath();ctx.arc(1050,70,250,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+  ctx.fillStyle='#14263b';ctx.strokeStyle='#38516d';ctx.lineWidth=3;roundRect(ctx,55,55,1090,520,32);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#36d399';ctx.font='700 25px Arial';ctx.fillText('TRADING RISK CALCULATOR',105,135);
+  ctx.fillStyle='#f1f6fc';ctx.font='800 68px Arial';ctx.fillText('CANDLE CATCH',105,230);
+  ctx.fillStyle='#a9bad0';ctx.font='30px Arial';ctx.fillText('MY 30-SECOND SCORE',105,290);
+  ctx.fillStyle='#36d399';ctx.font='800 150px Arial';ctx.fillText(String(score),100,465);
+  ctx.fillStyle='#dce7f3';ctx.font='28px Arial';ctx.fillText('POINTS',340,460);
+  ctx.fillStyle='#79b8ff';ctx.font='25px Arial';ctx.fillText('Can you beat my score?',650,390);
+  ctx.fillStyle='#a9bad0';ctx.font='22px Arial';ctx.fillText('Catch green candles • Avoid red candles',650,440);
+  ctx.fillStyle='#79b8ff';ctx.font='20px Arial';ctx.fillText('Play free: pradeepbrh2.github.io/trading-risk-calculator/game.html',105,535);
+  canvas.toBlob(blob=>resolve(blob),'image/png');
+ });
+}
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
 shareBtn.addEventListener('click',async()=>{
  const shareText='I scored '+score+' points in Candle Catch! Can you beat my score? 🕹️📈';
  const shareUrl='https://pradeepbrh2.github.io/trading-risk-calculator/game.html';
- const shareData={title:'My Candle Catch score',text:shareText,url:shareUrl};
  try{
-  if(navigator.share){await navigator.share(shareData);status.textContent='Score shared. Challenge your friends!';}
-  else if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(shareText+' Play here: '+shareUrl);status.textContent='Score and game link copied. Paste it into your social app!';}
-  else{window.open('https://wa.me/?text='+encodeURIComponent(shareText+' Play here: '+shareUrl),'_blank','noopener');status.textContent='Opening WhatsApp to share your score.';}
+  const blob=await makeScoreCard();
+  const file=blob?new File([blob],'candle-catch-score.png',{type:'image/png'}):null;
+  if(file&&navigator.canShare&&navigator.canShare({files:[file]})&&navigator.share){
+   await navigator.share({files:[file],title:'My Candle Catch score',text:shareText+' Play the game: '+shareUrl});
+   status.textContent='Score card shared. Challenge your friends!';
+  }else if(navigator.share){
+   await navigator.share({title:'My Candle Catch score',text:shareText,url:shareUrl});
+   status.textContent='Score shared. Challenge your friends!';
+  }else if(blob&&navigator.clipboard&&window.ClipboardItem&&window.isSecureContext){
+   await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
+   status.textContent='Score card image copied. Paste it into your social post; game link: '+shareUrl;
+  }else if(navigator.clipboard&&window.isSecureContext){
+   await navigator.clipboard.writeText(shareText+' Play here: '+shareUrl);
+   status.textContent='Score and game link copied. Paste it into your social app!';
+  }else{
+   window.open('https://wa.me/?text='+encodeURIComponent(shareText+' Play here: '+shareUrl),'_blank','noopener');
+   status.textContent='Opening WhatsApp to share your score.';
+  }
  }catch(err){if(err&&err.name!=='AbortError')status.textContent='Could not open sharing. Try again or copy the game link.';}
 });
 paintStats();
