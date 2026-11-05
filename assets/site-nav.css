@@ -1,0 +1,12 @@
+:root{--nav-bg:#0b1423;--nav-panel:#101d30;--nav-border:#263951;--nav-text:#e8f0fa;--nav-muted:#9aabc0;--nav-accent:#68b7ff}
+body{padding-left:258px!important;transition:padding-left .2s}
+#site-sidebar{position:fixed;z-index:1000;inset:0 auto 0 0;width:258px;background:var(--nav-bg);border-right:1px solid var(--nav-border);color:var(--nav-text);display:flex;flex-direction:column;padding:20px 14px;overflow-y:auto;font:14px/1.4 system-ui,-apple-system,Segoe UI,sans-serif}
+#site-sidebar .nav-brand{font-size:16px;font-weight:800;padding:5px 10px 18px;text-decoration:none;color:var(--nav-text);letter-spacing:.1px}
+#site-sidebar .nav-group{margin:12px 0 5px;padding:0 10px;color:var(--nav-muted);font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase}
+#site-sidebar a.nav-link{display:flex;align-items:center;gap:10px;padding:9px 10px;margin:2px 0;border-radius:8px;color:#c5d2e2;text-decoration:none}
+#site-sidebar a.nav-link:hover,#site-sidebar a.nav-link[aria-current=page]{background:#1b3049;color:#fff}
+#site-sidebar a.nav-link[aria-current=page]{box-shadow:inset 3px 0 var(--nav-accent)}
+#site-sidebar .nav-foot{margin-top:auto;padding:14px 10px 2px;color:var(--nav-muted);font-size:11px}
+#nav-toggle{display:none;position:fixed;z-index:1002;top:12px;left:12px;border:1px solid var(--nav-border);border-radius:9px;background:#101d30;color:#fff;padding:9px 12px;font-size:18px;line-height:1;cursor:pointer}
+#nav-scrim{display:none;position:fixed;z-index:999;inset:0;background:#0009}
+@media(max-width:760px){body{padding-left:0!important}#site-sidebar{transform:translateX(-105%);transition:transform .2s;box-shadow:12px 0 40px #0008}body.nav-open #site-sidebar{transform:translateX(0)}#nav-toggle{display:block}body.nav-open #nav-scrim{display:block}}
