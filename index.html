@@ -827,9 +827,15 @@ function importFullBackup(file){
    const backup=JSON.parse(String(reader.result||''));
    if(!backup||backup.app!=='Trading Risk Calculator'||backup.schemaVersion!==1)throw new Error('This is not a supported calculator backup.');
    if(!backup.calculator||!backup.calculator.settings||!Array.isArray(backup.calculator.instruments)||!backup.calculator.instruments.length)throw new Error('Calculator settings or instruments are missing.');
+   const cs=backup.calculator.settings;
+   if(!['amount','percent'].includes(cs.reserveMode)||!['amount','percent'].includes(cs.riskMode)||!['capital','reserve','risk','leverage'].every(k=>cs[k]!==undefined&&Number.isFinite(Number(cs[k]))))throw new Error('Calculator account settings are invalid.');
+   const validInstruments=backup.calculator.instruments.every(x=>x&&Number.isInteger(Number(x.id))&&Number(x.id)>0&&typeof x.name==='string'&&['long','short'].includes(x.side)&&['entry','sl'].every(k=>x[k]===''||Number.isFinite(Number(x[k]))));
+   if(!validInstruments)throw new Error('One or more instrument setups are invalid.');
    if(!Array.isArray(backup.journal)||!backup.charges||typeof backup.charges!=='object'||!backup.guardrails||typeof backup.guardrails!=='object')throw new Error('Journal, charge settings or risk controls are missing.');
    const validTrades=backup.journal.every(t=>t&&typeof t.date==='string'&&typeof t.symbol==='string'&&['long','short'].includes(t.side)&&Number.isInteger(Number(t.qty))&&Number(t.qty)>0&&Number.isFinite(Number(t.entry))&&Number(t.entry)>0&&Number.isFinite(Number(t.exit))&&Number(t.exit)>0);
-   if(!validTrades)throw new Error('One or more journal records are invalid.');
+   const validCharges=['brokerage','stt','exchange','stamp','gst','sebi','slippage'].every(k=>backup.charges[k]!==undefined&&Number.isFinite(Number(backup.charges[k]))&&Number(backup.charges[k])>=0);
+   const validGuardrails=['dailyLossLimit','maxTradesPerDay'].every(k=>backup.guardrails[k]!==undefined&&Number.isFinite(Number(backup.guardrails[k]))&&Number(backup.guardrails[k])>=0);
+   if(!validTrades||!validCharges||!validGuardrails)throw new Error('Journal, charge profile or daily risk controls contain invalid values.');
    if(!confirm('Restore this backup? It will replace the calculator settings, journal, charge profile and risk controls currently stored in this browser.'))return;
    state=backup.calculator;nextId=Math.max(0,...state.instruments.map(x=>Number(x.id)||0))+1;
    journalTrades=backup.journal;chargeSettings={...chargeSettings,...backup.charges};guardrails={...guardrails,...backup.guardrails};
