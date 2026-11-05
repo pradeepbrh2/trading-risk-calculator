@@ -24,6 +24,12 @@ Configure brokerage per executed order, STT on sell-side turnover, exchange tran
 
 Estimated costs are saved with each newly recorded journal trade so changing the tariff later does not rewrite previously recorded results. Legacy trades without a saved cost estimate use the currently configured profile.
 
+## Mini game
+
+- **Candle Catch** — [Play the 30-second mini game](https://pradeepbrh2.github.io/trading-risk-calculator/game.html)
+- Tap green candles to score, avoid red candles, and beat your personal best.
+- Best score is stored locally in the browser. The game uses no market feed and has no effect on calculator data.
+
 ## Data and privacy
 
 - Calculator settings, charge profile, risk controls and journal are stored in this browser's local storage.
