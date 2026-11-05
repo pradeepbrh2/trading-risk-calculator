@@ -169,6 +169,18 @@ body{background:radial-gradient(ellipse at 78% 7%,rgba(22,91,155,.22),transparen
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 
 
+ 
+.workspace-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:22px 0 16px;padding:8px;background:var(--panel,rgba(255,255,255,.04));border:1px solid var(--line,rgba(255,255,255,.1));border-radius:16px;position:sticky;top:10px;z-index:20;backdrop-filter:blur(14px)}
+.workspace-tab{display:flex;align-items:center;justify-content:center;gap:9px;min-height:52px;padding:10px 14px;border:1px solid transparent;border-radius:11px;background:transparent;color:var(--muted,#aab6c8);font:inherit;font-weight:700;cursor:pointer;transition:background .18s ease,border-color .18s ease,color .18s ease}
+.workspace-tab span{font-size:11px;opacity:.65;letter-spacing:.08em}
+.workspace-tab:hover{background:rgba(255,255,255,.06);color:var(--text,#fff)}
+.workspace-tab.is-active{background:linear-gradient(135deg,rgba(59,130,246,.2),rgba(16,185,129,.12));border-color:rgba(96,165,250,.42);color:var(--text,#fff);box-shadow:0 5px 20px rgba(0,0,0,.12)}
+.workspace-panel[hidden]{display:none!important}
+.workspace-panel{animation:workspace-in .22s ease both}
+@keyframes workspace-in{from{opacity:.45;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:620px){.workspace-tabs{gap:4px;padding:5px;top:5px}.workspace-tab{flex-direction:column;gap:3px;padding:8px 3px;font-size:12px;min-height:58px}.workspace-tab span{font-size:9px}}
+@media(prefers-reduced-motion:reduce){.workspace-panel{animation:none}.workspace-tab{transition:none}}
+
 </style>
 <style>
 .seo-guide h2,.seo-faq h2{font-size:21px;line-height:1.3;margin:0 0 13px;color:#edf4ff}
@@ -238,6 +250,12 @@ body{background:radial-gradient(ellipse at 78% 7%,rgba(22,91,155,.22),transparen
 </div><div class="market-glow glow-one"></div><div class="market-glow glow-two"></div>
 <div class="floating-candles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
 </section>
+<nav class="workspace-tabs" role="tablist" aria-label="Trading workspace">
+  <button class="workspace-tab is-active" id="tab-calculator" type="button" role="tab" aria-selected="true" aria-controls="panel-calculator" data-panel="panel-calculator"><span>01</span> Position Calculator</button>
+  <button class="workspace-tab" id="tab-risk" type="button" role="tab" aria-selected="false" aria-controls="panel-risk" data-panel="panel-risk"><span>02</span> Risk Dashboard</button>
+  <button class="workspace-tab" id="tab-journal" type="button" role="tab" aria-selected="false" aria-controls="panel-journal" data-panel="panel-journal"><span>03</span> Trade Journal</button>
+</nav>
+<div class="workspace-panel" id="panel-calculator" role="tabpanel" aria-labelledby="tab-calculator">
 <section class="card" id="calculator">
 <h2>Account-wide settings</h2>
 <div class="settings-grid">
@@ -257,6 +275,8 @@ body{background:radial-gradient(ellipse at 78% 7%,rgba(22,91,155,.22),transparen
 
 <section class="card instrument-list"><div class="instrument-list-head"><div><h2>Instrument</h2><div class="hint" id="count">1 instrument</div></div><button class="add-btn" id="addInstrument" type="button">＋ Add instrument</button></div><div id="instruments"></div></section>
 <div class="toolbar"><span class="hint">Your settings and instrument calculations are saved in this browser.</span><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="add-btn" id="exportExcel" type="button">↓ Download Excel (.xlsx)</button><button class="reset-btn" id="resetAll" type="button">Reset all</button></div></div>
+</div>
+<div class="workspace-panel" id="panel-risk" role="tabpanel" aria-labelledby="tab-risk" hidden>
 <section class="card" id="risk-dashboard" aria-labelledby="risk-dashboard-title">
  <h2 id="risk-dashboard-title">Daily Risk Controls &amp; Portfolio Exposure</h2>
  <p class="hint">Set your personal daily guardrails. These are planning reminders only; they do not connect to or restrict broker orders.</p>
@@ -269,6 +289,8 @@ body{background:radial-gradient(ellipse at 78% 7%,rgba(22,91,155,.22),transparen
  <p class="hint">Exposure totals use each valid instrument setup currently entered in the calculator. Margin is an estimate based on your leverage input. Daily loss and trade count use completed trades in your local journal.</p>
 </section>
 
+</div>
+<div class="workspace-panel" id="panel-journal" role="tabpanel" aria-labelledby="tab-journal" hidden>
 <section class="card" id="trade-journal" aria-labelledby="journal-title">
   <h2 id="journal-title">Trade Journal &amp; Realised P&amp;L</h2>
   <p class="hint">Record completed trades manually. Results are stored in this browser only.</p>
@@ -300,6 +322,8 @@ body{background:radial-gradient(ellipse at 78% 7%,rgba(22,91,155,.22),transparen
   <div class="journal-metrics" id="journalAnalytics"></div>
   <p class="hint">Gross P&amp;L = (Exit − Entry) × Quantity for long trades, reversed for short trades. Net P&amp;L deducts the estimated charges above. Actual charges may vary by segment, instrument, order type and broker.</p>
 </section>
+
+</div>
 
 <div class="note">Position sizing is an estimate. Actual MIS margin varies by stock and broker. Calculations exclude brokerage, taxes, other charges and slippage. Stop-loss execution can be worse than the planned price.</div>
 
@@ -782,7 +806,15 @@ const last=$('instruments').lastElementChild;last.scrollIntoView({behavior:'smoo
 };
 $('resetAll').onclick=()=>{if(confirm('Reset all settings and remove added instruments?')){state=structuredClone(defaultState);nextId=2;persist();renderSettings();renderInstruments();}};
 }
-$('getStarted').addEventListener('click',()=>{$('calculator').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});});
+function activateWorkspace(panelId,scroll=true){
+ const panels=['panel-calculator','panel-risk','panel-journal'];
+ panels.forEach(id=>{const panel=$(id),active=id===panelId;panel.hidden=!active;});
+ document.querySelectorAll('.workspace-tab').forEach(btn=>{const active=btn.dataset.panel===panelId;btn.classList.toggle('is-active',active);btn.setAttribute('aria-selected',String(active));btn.tabIndex=active?0:-1;});
+ if(scroll){const tabs=document.querySelector('.workspace-tabs');tabs.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});}
+}
+document.querySelectorAll('.workspace-tab').forEach(btn=>btn.addEventListener('click',()=>activateWorkspace(btn.dataset.panel)));
+document.querySelector('.workspace-tabs').addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;const btns=[...document.querySelectorAll('.workspace-tab')],current=btns.indexOf(document.activeElement);let next=e.key==='Home'?0:e.key==='End'?btns.length-1:(current+(e.key==='ArrowRight'?1:-1)+btns.length)%btns.length;e.preventDefault();btns[next].focus();activateWorkspace(btns[next].dataset.panel,false);});
+$('getStarted').addEventListener('click',()=>{activateWorkspace('panel-calculator');$('calculator').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});});
 $('skipWelcome').addEventListener('click',()=>{$('welcomeHero').classList.add('is-hidden');});
 load();renderSettings();bindSettings();renderInstruments();
 loadJournal();loadCharges();bindCharges();loadGuardrails();bindRiskDashboard();$('journalDate').value=localISODate();$('saveJournalTrade').addEventListener('click',addJournalTrade);$('clearJournalForm').addEventListener('click',clearJournalForm);$('exportJournalCsv').addEventListener('click',exportJournalCsv);renderJournal();renderRiskDashboard();
