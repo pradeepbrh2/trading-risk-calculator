@@ -23,7 +23,7 @@ jobs:
           node -e "require('sharp')('assets/candle-catch-preview.svg').png().toFile('assets/candle-catch-preview.png')"
       - name: Commit PNG if changed
         run: |
-          if git diff --quiet -- assets/candle-catch-preview.png; then
+          if [ -f assets/candle-catch-preview.png ] && git diff --quiet -- assets/candle-catch-preview.png; then
             echo "Preview PNG is already current"
             exit 0
           fi
