@@ -181,6 +181,8 @@ body{background:radial-gradient(ellipse at 78% 7%,rgba(22,91,155,.22),transparen
 @media(max-width:620px){.workspace-tabs{gap:4px;padding:5px;top:5px}.workspace-tab{flex-direction:column;gap:3px;padding:8px 3px;font-size:12px;min-height:58px}.workspace-tab span{font-size:9px}}
 @media(prefers-reduced-motion:reduce){.workspace-panel{animation:none}.workspace-tab{transition:none}}
 
+body[data-page-view="risk"] #welcomeHero,body[data-page-view="risk"] .note,body[data-page-view="risk"] #quick-answer,body[data-page-view="risk"] #how-it-works,body[data-page-view="risk"] #faq,body[data-page-view="journal"] #welcomeHero,body[data-page-view="journal"] .note,body[data-page-view="journal"] #quick-answer,body[data-page-view="journal"] #how-it-works,body[data-page-view="journal"] #faq{display:none!important}
+body[data-page-view="risk"] .header-link,body[data-page-view="journal"] .header-link{font-size:13px}
 </style>
 <style>
 .seo-guide h2,.seo-faq h2{font-size:21px;line-height:1.3;margin:0 0 13px;color:#edf4ff}
@@ -251,9 +253,9 @@ body{background:radial-gradient(ellipse at 78% 7%,rgba(22,91,155,.22),transparen
 <div class="floating-candles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
 </section>
 <nav class="workspace-tabs" aria-label="Trading tools">
-  <a class="workspace-tab" data-view-link="calculator" href="?view=calculator"><span>01</span> Position Calculator</a>
-  <a class="workspace-tab" data-view-link="risk" href="?view=risk"><span>02</span> Risk Dashboard</a>
-  <a class="workspace-tab" data-view-link="journal" href="?view=journal"><span>03</span> Trade Journal</a>
+  <a class="workspace-tab" data-view-link="calculator" href="index.html"><span>01</span> Position Calculator</a>
+  <a class="workspace-tab" data-view-link="risk" href="risk-dashboard.html"><span>02</span> Risk Dashboard</a>
+  <a class="workspace-tab" data-view-link="journal" href="trade-journal.html"><span>03</span> Trade Journal</a>
 </nav>
 <div class="workspace-panel" id="panel-calculator">
 <section class="card" id="calculator">
@@ -858,7 +860,9 @@ const last=$('instruments').lastElementChild;last.scrollIntoView({behavior:'smoo
 $('resetAll').onclick=()=>{if(confirm('Reset all settings and remove added instruments?')){state=structuredClone(defaultState);nextId=2;persist();renderSettings();renderInstruments();}};
 }
 const requestedView=new URLSearchParams(window.location.search).get('view');
-const currentView=['calculator','risk','journal'].includes(requestedView)?requestedView:'calculator';
+const pathView=window.location.pathname.endsWith('/risk-dashboard.html')?'risk':window.location.pathname.endsWith('/trade-journal.html')?'journal':'calculator';
+const currentView=pathView!=='calculator'?pathView:(['calculator','risk','journal'].includes(requestedView)?requestedView:'calculator');
+document.body.dataset.pageView=currentView;
 const viewPanels={calculator:'panel-calculator',risk:'panel-risk',journal:'panel-journal'};
 Object.entries(viewPanels).forEach(([view,id])=>{$(id).hidden=view!==currentView;});
 document.querySelectorAll('[data-view-link]').forEach(link=>{
