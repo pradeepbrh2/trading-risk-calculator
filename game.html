@@ -68,10 +68,10 @@ function spawn(){
  if(!choices.length)return;
  if(choices.length>1)choices=choices.filter(i=>i!==lastIndex);
  const idx=choices[Math.floor(Math.random()*choices.length)],bull=Math.random()<.72;
- lastIndex=idx;active.set(idx,{bull});
+ lastIndex=idx;const candleState={bull};active.set(idx,candleState);
  const b=tiles[idx];b.className='tile '+(bull?'bull':'bear');b.innerHTML='<span class="candle" aria-hidden="true"></span><span class="tag">'+(bull?'BULL':'BEAR')+'</span>';b.disabled=false;b.setAttribute('aria-label',bull?'Green bull candle, tap to score':'Red bear candle, avoid tapping');
  const life=bull?1050:1250;
- setTimeout(()=>{if(active.has(idx))clearTile(idx)},life);
+ setTimeout(()=>{if(active.get(idx)===candleState)clearTile(idx)},life);
 }
 function finish(){
  if(!running)return;running=false;clearInterval(timer);clearInterval(spawner);clearBoard();
