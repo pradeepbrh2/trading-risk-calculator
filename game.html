@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b1220">
+<title>Candle Catch — Trading Break Mini Game</title>
+<meta name="description" content="Take a quick trading break with Candle Catch, a free 30-second reflex mini-game. Catch green candles, avoid red candles and beat your best score.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://pradeepbrh2.github.io/trading-risk-calculator/game.html">
+<style>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#111d30;--panel2:#16253a;--line:#263951;--text:#edf4fc;--muted:#9aabc0;--green:#36d399;--red:#fb7185;--blue:#79b8ff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -20%,#1b3652 0%,var(--bg) 60%);color:var(--text);font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+a{color:inherit}.shell{width:min(920px,calc(100% - 32px));margin:0 auto;padding:28px 0 56px}.top{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:30px}.brand{font-weight:750;letter-spacing:.2px}.back{color:var(--blue);text-decoration:none;font-size:14px}.back:hover{text-decoration:underline}
+.hero{text-align:center;margin:20px auto 26px;max-width:650px}.eyebrow{color:var(--green);font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase}.hero h1{font-size:clamp(32px,6vw,52px);line-height:1.05;margin:10px 0}.hero p{color:var(--muted);margin:10px 0}
+.game-card{background:linear-gradient(160deg,#15263b,#101a2a);border:1px solid var(--line);border-radius:22px;padding:clamp(16px,4vw,28px);box-shadow:0 24px 70px #0005}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}.stat{background:#0b1524;border:1px solid #22364d;border-radius:14px;padding:12px;text-align:center}.stat span{display:block;color:var(--muted);font-size:11px;letter-spacing:1px;text-transform:uppercase}.stat strong{font-size:clamp(22px,4vw,30px);font-variant-numeric:tabular-nums}
+.progress{height:7px;background:#26364b;border-radius:9px;overflow:hidden;margin:0 0 18px}.progress>div{height:100%;width:100%;background:var(--green);transition:width .15s linear}
+.status{text-align:center;color:var(--muted);min-height:26px;margin:0 0 14px}.board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;max-width:620px;margin:0 auto}.tile{min-height:clamp(84px,15vw,120px);border:1px solid #2a4059;border-radius:14px;background:linear-gradient(145deg,#192b40,#111d2e);display:grid;place-items:center;position:relative;overflow:hidden;cursor:pointer;touch-action:manipulation;transition:transform .1s,border-color .1s,background .1s}.tile:active{transform:scale(.96)}.tile:focus-visible{outline:3px solid var(--blue);outline-offset:2px}.tile .candle{position:relative;width:24px;height:44px;border:3px solid currentColor;border-radius:3px;background:currentColor;opacity:.95}.tile .candle:before,.tile .candle:after{content:"";position:absolute;left:7px;width:4px;height:14px;background:currentColor}.tile .candle:before{top:-16px}.tile .candle:after{bottom:-16px}.tile.bull{color:var(--green);border-color:#267d65;background:linear-gradient(145deg,#12382f,#10251f)}.tile.bear{color:var(--red);border-color:#874052;background:linear-gradient(145deg,#3b1e2b,#251521)}.tile .tag{position:absolute;bottom:7px;font-size:10px;font-weight:800;letter-spacing:1px}.tile.bull .tag{color:var(--green)}.tile.bear .tag{color:var(--red)}
+.controls{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:22px 0 6px}.btn{border:0;border-radius:12px;padding:13px 22px;font-weight:800;font-size:14px;cursor:pointer}.primary{background:var(--green);color:#082219}.secondary{background:#23364e;color:var(--text);border:1px solid #38516d}.btn:disabled{opacity:.45;cursor:not-allowed}.rules{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}.rule{background:#0c1726;border:1px solid #23374e;border-radius:13px;padding:13px;color:var(--muted);font-size:13px}.rule strong{display:block;margin-bottom:3px}.rule.good strong{color:var(--green)}.rule.bad strong{color:var(--red)}.foot{text-align:center;color:#71849c;font-size:12px;margin-top:18px}
+@media(max-width:520px){.shell{width:min(100% - 20px,920px);padding-top:18px}.board{gap:7px}.tile{min-height:78px;border-radius:10px}.tile .candle{transform:scale(.82)}.stats{gap:6px}.stat{padding:9px 4px}.rules{gap:8px}.rule{padding:10px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<main class="shell">
+<header class="top"><div class="brand">◈ Trading Risk Calculator</div><a class="back" href="index.html">← Back to calculator</a></header>
+<section class="hero"><div class="eyebrow">A little break between trades</div><h1>🕹️ Candle Catch</h1><p>Catch the green candles. Dodge the red ones. How sharp are your reflexes?</p></section>
+<section class="game-card" aria-label="Candle Catch game">
+<div class="stats"><div class="stat"><span>Score</span><strong id="score">0</strong></div><div class="stat"><span>Time left</span><strong id="time">30</strong></div><div class="stat"><span>Personal best</span><strong id="best">0</strong></div></div>
+<div class="progress" aria-hidden="true"><div id="timeBar"></div></div>
+<p class="status" id="status" aria-live="polite">Press Start when you're ready.</p>
+<div class="board" id="board" aria-label="Candle targets">
+<button class="tile" type="button" data-index="0" aria-label="Empty candle slot 1" disabled></button>
+<button class="tile" type="button" data-index="1" aria-label="Empty candle slot 2" disabled></button>
+<button class="tile" type="button" data-index="2" aria-label="Empty candle slot 3" disabled></button>
+<button class="tile" type="button" data-index="3" aria-label="Empty candle slot 4" disabled></button>
+<button class="tile" type="button" data-index="4" aria-label="Empty candle slot 5" disabled></button>
+<button class="tile" type="button" data-index="5" aria-label="Empty candle slot 6" disabled></button>
+<button class="tile" type="button" data-index="6" aria-label="Empty candle slot 7" disabled></button>
+<button class="tile" type="button" data-index="7" aria-label="Empty candle slot 8" disabled></button>
+<button class="tile" type="button" data-index="8" aria-label="Empty candle slot 9" disabled></button>
+<button class="tile" type="button" data-index="9" aria-label="Empty candle slot 10" disabled></button>
+<button class="tile" type="button" data-index="10" aria-label="Empty candle slot 11" disabled></button>
+<button class="tile" type="button" data-index="11" aria-label="Empty candle slot 12" disabled></button>
+</div>
+<div class="controls"><button class="btn primary" id="start" type="button">▶ Start game</button><button class="btn secondary" id="reset" type="button">↻ Reset</button></div>
+<div class="rules"><div class="rule good"><strong>🟢 Green candle: +1 point</strong>Tap it quickly to score.</div><div class="rule bad"><strong>🔴 Red candle: −2 points</strong>Avoid it. Missed greens are okay.</div></div>
+<p class="foot">30 seconds • No real market data • Just for fun, not trading advice</p>
+</section>
+</main>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const tiles=[...document.querySelectorAll('.tile')];
+const scoreEl=$('score'),timeEl=$('time'),bestEl=$('best'),bar=$('timeBar'),status=$('status'),startBtn=$('start');
+let score=0,timeLeft=30,running=false,timer=null,spawner=null,active=new Map(),lastIndex=-1;
+const BEST_KEY='tradingRiskCandleCatchBestV1';
+let best=0;try{best=Math.max(0,Number(localStorage.getItem(BEST_KEY))||0)}catch(e){}
+bestEl.textContent=best;
+function clearTile(i){const b=tiles[i];b.className='tile';b.innerHTML='';b.disabled=true;b.setAttribute('aria-label','Empty candle slot '+(i+1));active.delete(i);}
+function clearBoard(){active.forEach((_,i)=>clearTile(i));tiles.forEach((_,i)=>clearTile(i));}
+function paintStats(){scoreEl.textContent=score;timeEl.textContent=timeLeft;bar.style.width=(timeLeft/30*100)+'%';}
+function spawn(){
+ if(!running)return;
+ let choices=tiles.map((_,i)=>i).filter(i=>!active.has(i));
+ if(!choices.length)return;
+ if(choices.length>1)choices=choices.filter(i=>i!==lastIndex);
+ const idx=choices[Math.floor(Math.random()*choices.length)],bull=Math.random()<.72;
+ lastIndex=idx;active.set(idx,{bull});
+ const b=tiles[idx];b.className='tile '+(bull?'bull':'bear');b.innerHTML='<span class="candle" aria-hidden="true"></span><span class="tag">'+(bull?'BULL':'BEAR')+'</span>';b.disabled=false;b.setAttribute('aria-label',bull?'Green bull candle, tap to score':'Red bear candle, avoid tapping');
+ const life=bull?1050:1250;
+ setTimeout(()=>{if(active.has(idx))clearTile(idx)},life);
+}
+function finish(){
+ if(!running)return;running=false;clearInterval(timer);clearInterval(spawner);clearBoard();
+ if(score>best){best=score;bestEl.textContent=best;try{localStorage.setItem(BEST_KEY,String(best))}catch(e){}}
+ status.textContent='Time! You scored '+score+'. '+(score>=20?'Sharp reflexes!':score>=10?'Nice run!':'Good warm-up. Try again?');
+ startBtn.disabled=false;startBtn.textContent='▶ Play again';
+}
+function start(){
+ if(running)return;
+ clearInterval(timer);clearInterval(spawner);clearBoard();score=0;timeLeft=30;running=true;startBtn.disabled=true;startBtn.textContent='Game running…';status.textContent='Go! Tap green candles only.';paintStats();
+ spawn();spawner=setInterval(spawn,620);
+ timer=setInterval(()=>{timeLeft=Math.max(0,timeLeft-1);paintStats();if(timeLeft===0)finish()},1000);
+}
+tiles.forEach((b,i)=>b.addEventListener('click',()=>{
+ if(!running||!active.has(i))return;
+ const candle=active.get(i);clearTile(i);
+ if(candle.bull){score+=1;status.textContent='Nice catch! +1'}else{score=Math.max(0,score-2);status.textContent='Oops! Bear candle −2'}
+ paintStats();
+}));
+$('reset').addEventListener('click',()=>{
+ clearInterval(timer);clearInterval(spawner);running=false;clearBoard();score=0;timeLeft=30;paintStats();status.textContent='Ready when you are.';startBtn.disabled=false;startBtn.textContent='▶ Start game';
+});
+startBtn.addEventListener('click',start);
+paintStats();
+})();
+</script>
+</body>
+</html>
