@@ -1,23 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://pradeepbrh2.github.io/trading-risk-calculator/</loc>
-    <changefreq>monthly</changefreq>
-    <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>https://pradeepbrh2.github.io/trading-risk-calculator/risk-dashboard.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://pradeepbrh2.github.io/trading-risk-calculator/trade-journal.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://pradeepbrh2.github.io/trading-risk-calculator/game.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
+<url><loc>https://pradeepbrh2.github.io/trading-risk-calculator/</loc></url>
+<url><loc>https://pradeepbrh2.github.io/trading-risk-calculator/risk-dashboard.html</loc></url>
+<url><loc>https://pradeepbrh2.github.io/trading-risk-calculator/trade-journal.html</loc></url>
+<url><loc>https://pradeepbrh2.github.io/trading-risk-calculator/game.html</loc></url>
+<url><loc>https://pradeepbrh2.github.io/trading-risk-calculator/about.html</loc></url>
+<url><loc>https://pradeepbrh2.github.io/trading-risk-calculator/contact.html</loc></url>
+<url><loc>https://pradeepbrh2.github.io/trading-risk-calculator/privacy.html</loc></url>
+<url><loc>https://pradeepbrh2.github.io/trading-risk-calculator/terms.html</loc></url>
+<url><loc>https://pradeepbrh2.github.io/trading-risk-calculator/risk-disclaimer.html</loc></url>
+<url><loc>https://pradeepbrh2.github.io/trading-risk-calculator/guides/position-sizing.html</loc></url>
+<url><loc>https://pradeepbrh2.github.io/trading-risk-calculator/guides/risk-reward-ratio.html</loc></url>
+<url><loc>https://pradeepbrh2.github.io/trading-risk-calculator/guides/trading-costs.html</loc></url>
 </urlset>
