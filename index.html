@@ -48,8 +48,8 @@ let state=structuredClone(defaultState), nextId=2;
 const money=n=>'₹'+Number(n).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
 const whole=n=>Math.max(0,Math.floor(n));
 function persist(){try{localStorage.setItem(STORE,JSON.stringify(state));}catch(e){}}
-function load(){try{const saved=JSON.parse(localStorage.getItem(STORE));if(saved&&saved.settings&&Array.isArray(saved.instruments)&&saved.instruments.length){state=saved;nextId=Math.max(0,...state.instruments.map(x=>Number(x.id)||0))+1;}}catch(e){}}
-function settingsFromUI(){state.settings={capital:$('capital').value,reserve:$('reserve').value,reserveMode:state.settings.reserveMode,risk:$('risk').value,riskMode:state.settings.riskMode,leverage:$('leverage').value};}
+function load(){try{const saved=JSON.parse(localStorage.getItem(STORE));if(saved&&saved.settings&&Array.isArray(saved.instruments)&&saved.instruments.length){state=saved;nextId=Math.max(0,...state.instruments.map(x=>Number(x.id)||0))+1;/* Percentage-based reserve and risk must stay within 0–100%. */if(state.settings.reserveMode==='percent'&&Number(state.settings.reserve)>100)state.settings.reserve='100';if(state.settings.riskMode==='percent'&&Number(state.settings.risk)>100)state.settings.risk='100';}}catch(e){}}
+function settingsFromUI(){const capital=Number($('capital').value)||0;let reserve=$('reserve').value,risk=$('risk').value;const reserveMax=state.settings.reserveMode==='percent'?100:capital;if(Number(reserve)>reserveMax)reserve=String(reserveMax);const reserveAmount=state.settings.reserveMode==='percent'?capital*Number(reserve)/100:Number(reserve);const usable=Math.max(0,capital-reserveAmount);const riskMax=state.settings.riskMode==='percent'?(capital>0?Math.min(100,usable/capital*100):0):usable;if(Number(risk)>riskMax)risk=String(riskMax);$('reserve').value=reserve;$('risk').value=risk;state.settings={capital:$('capital').value,reserve,reserveMode:state.settings.reserveMode,risk,riskMode:state.settings.riskMode,leverage:$('leverage').value};}
 function computedSettings(){
 const s=state.settings,capital=Number(s.capital),reserveInput=Number(s.reserve),riskInput=Number(s.risk),leverage=Number(s.leverage);
 const reserve=s.reserveMode==='percent'?capital*reserveInput/100:reserveInput;
@@ -63,16 +63,20 @@ $('reserveAmount').classList.toggle('active',s.reserveMode==='amount');$('reserv
 $('riskAmount').classList.toggle('active',s.riskMode==='amount');$('riskPercent').classList.toggle('active',s.riskMode==='percent');
 $('reserveLabel').textContent=s.reserveMode==='percent'?'Safety reserve (% of capital)':'Safety reserve (₹)';
 $('riskLabel').textContent=s.riskMode==='percent'?'Maximum risk per trade (% of capital)':'Maximum risk per trade (₹)';
+if(s.reserveMode==='percent')$('reserve').setAttribute('max','100');else $('reserve').setAttribute('max',String(Math.max(0,Number(s.capital)||0)));
+const usableForRisk=Math.max(0,(Number(s.capital)||0)-c.reserve);
+if(s.riskMode==='percent')$('risk').setAttribute('max',String(Number(s.capital)>0?Math.min(100,usableForRisk/Number(s.capital)*100):0));else $('risk').setAttribute('max',String(usableForRisk));
 const c=computedSettings();
 $('reserveCalculated').textContent='Reserve: '+money(c.reserve);
 $('riskCalculated').textContent='Risk per trade: '+money(c.risk);
 }
 function validateGlobal(c){
 if(!Number.isFinite(c.capital)||c.capital<=0)return 'Enter a valid total capital greater than zero.';
-if(!Number.isFinite(c.reserve)||c.reserve<0||c.reserve>=c.capital)return 'Safety reserve must be zero or more and lower than total capital.';
-if(state.settings.reserveMode==='percent'&&Number(state.settings.reserve)>=100)return 'Safety reserve percentage must be below 100%.';
+if(!Number.isFinite(c.reserve)||c.reserve<0||c.reserve>c.capital)return 'Safety reserve cannot exceed total trading capital.';
+if(state.settings.reserveMode==='percent'&&(Number(state.settings.reserve)<0||Number(state.settings.reserve)>100))return 'Safety reserve percentage must be between 0% and 100%.';
 if(state.settings.riskMode==='percent'&&(Number(state.settings.risk)<=0||Number(state.settings.risk)>100))return 'Risk percentage must be greater than 0% and no more than 100%.';
 if(!Number.isFinite(c.risk)||c.risk<=0)return 'Maximum risk per trade must be greater than zero.';
+if(c.risk>c.usable)return 'Maximum risk per trade cannot exceed usable trading capital (capital minus safety reserve).';
 if(!Number.isFinite(c.leverage)||c.leverage<=0)return 'Enter a valid leverage greater than zero.';
 return '';
 }
