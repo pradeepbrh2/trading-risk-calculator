@@ -4,45 +4,171 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0b1220"><title>Trading Risk Calculator</title>
 <style>
-:root{color-scheme:dark;--bg:#0b1220;--panel:#111c2e;--muted:#91a0b8;--text:#edf3ff;--line:#26364f;--blue:#4f8cff;--green:#35c98a}
-*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#0b1220,#101b2d);font:15px/1.5 Segoe UI,Arial,sans-serif;color:var(--text);min-height:100vh}.wrap{max-width:960px;margin:35px auto;padding:0 18px}.head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px}h1{font-size:25px;margin:0}.sub,.hint,.note{color:var(--muted)}.sub{margin:4px 0}.tag{border:1px solid #2d4668;border-radius:25px;padding:6px 11px;color:#b9d2ff;font-size:12px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px}h2{font-size:16px;margin:0 0 16px}.side{display:flex;gap:8px;margin-bottom:16px}button{flex:1;border:1px solid var(--line);background:#17243a;color:var(--text);border-radius:9px;padding:10px;cursor:pointer;font-weight:600}.active{background:#183b70;border-color:var(--blue)}.fields{display:grid;grid-template-columns:1fr 1fr;gap:13px}.field{display:flex;flex-direction:column;gap:6px}label{font-size:12px;color:var(--muted)}input{width:100%;background:#0c1627;border:1px solid #30425e;color:var(--text);border-radius:9px;padding:12px;font:inherit;outline:none}input:focus{border-color:var(--blue)}.hint,.note{font-size:12px}.hero{background:#123b37;border:1px solid #286457;border-radius:13px;padding:16px;margin-bottom:13px}.k{font-size:12px;color:var(--muted)}.hero .k{color:#b6d8d0}.big{font-size:36px;font-weight:750;color:#71e1b5}.stats,.targets{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat,.target{background:#0c1627;border:1px solid var(--line);border-radius:11px;padding:12px}.v{font-size:18px;font-weight:700;margin-top:3px;overflow-wrap:anywhere}.section{font-size:12px;color:#b7c9e5;text-transform:uppercase;letter-spacing:.08em;margin:17px 0 8px}.row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #223149}.row span:first-child{color:var(--muted)}.row strong{text-align:right}.target{background:#102b28;border-color:#285743}.target .k,.target small{color:#a9d6c4}.target .v{font-size:21px;color:#65dfa9}.warning{display:none;margin-top:12px;background:#351d27;color:#ffc2c2;border:1px solid #704047;border-radius:9px;padding:10px;font-size:13px}.note{margin-top:14px}.footer{text-align:center;color:#71829c;font-size:11px;margin:18px 0}@media(max-width:720px){.grid{grid-template-columns:1fr}.head{align-items:flex-start;flex-direction:column}.card{padding:16px}}@media(max-width:390px){.fields{grid-template-columns:1fr}}
-</style></head>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#111c2e;--muted:#91a0b8;--text:#edf3ff;--line:#26364f;--blue:#4f8cff;--green:#35c98a;--red:#ff7777}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#0b1220,#101b2d);font:15px/1.5 Segoe UI,Arial,sans-serif;color:var(--text);min-height:100vh}.wrap{max-width:1000px;margin:30px auto;padding:0 18px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px}h1{font-size:25px;margin:0}.sub,.hint,.note{color:var(--muted)}.sub{margin:4px 0}.tag{border:1px solid #2d4668;border-radius:25px;padding:6px 11px;color:#b9d2ff;font-size:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:15px}.card h2{font-size:16px;margin:0 0 15px}.settings-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.field{display:flex;flex-direction:column;gap:6px;min-width:0}.field label{font-size:12px;color:var(--muted)}input{width:100%;min-width:0;background:#0c1627;border:1px solid #30425e;color:var(--text);border-radius:9px;padding:11px;font:inherit;outline:none}input:focus{border-color:var(--blue)}.field-head{display:flex;justify-content:space-between;align-items:center;gap:6px}.unit-toggle{display:flex;gap:3px;background:#0b1525;border:1px solid var(--line);border-radius:8px;padding:3px}.unit-toggle button,.small-btn{border:1px solid transparent;background:transparent;color:var(--muted);border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer}.unit-toggle button.active{background:#244875;color:white;border-color:#4f8cff}.hint{font-size:11px}.calculated{font-size:12px;color:#83dcb8;min-height:18px}.instrument-list{padding:16px}.instrument-list-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.instrument-list-head h2{font-size:18px;margin:0 0 3px}.instrument{padding:0;overflow:hidden;margin:10px 0;background:#0f1a2b}.instrument>summary{list-style:none;display:flex;align-items:center;gap:10px;cursor:pointer;padding:15px 17px;background:#17253a;min-height:58px}.instrument>summary::-webkit-details-marker{display:none}.instrument>summary::before{content:"▸";color:#a8bedb;font-size:18px;transition:transform .15s}.instrument[open]>summary::before{transform:rotate(90deg)}.instrument-name{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.summary-meta{color:var(--muted);font-size:12px;margin-left:auto;white-space:nowrap}.instrument-body{padding:17px}.instrument-list{padding:12px}.instrument-list-head{align-items:flex-start}.instrument-top{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:15px}.instrument-top .field{flex:1;max-width:420px}.remove{border:1px solid #653b48;background:#351f2a;color:#ffb4bd;border-radius:8px;padding:8px 10px;cursor:pointer;font-size:12px}.side{display:flex;gap:7px;margin-bottom:15px}.side button,.add-btn,.reset-btn{border:1px solid var(--line);background:#17243a;color:var(--text);border-radius:9px;padding:9px 13px;cursor:pointer;font-weight:600}.side button{flex:1}.side button.active{background:#183b70;border-color:var(--blue)}.trade-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}.result{margin-top:16px;border-top:1px solid var(--line);padding-top:15px}.hero{background:#123b37;border:1px solid #286457;border-radius:12px;padding:14px;margin-bottom:12px}.hero .k{font-size:12px;color:#b6d8d0}.qty{font-size:32px;font-weight:800;color:#71e1b5}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.stat{background:#0c1627;border:1px solid var(--line);border-radius:10px;padding:10px;min-width:0}.k{font-size:11px;color:var(--muted)}.v{font-size:16px;font-weight:700;margin-top:3px;overflow-wrap:anywhere}.section{font-size:11px;color:#b7c9e5;text-transform:uppercase;letter-spacing:.08em;margin:15px 0 7px}.rows{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}.row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid #223149;font-size:13px}.row span:first-child{color:var(--muted)}.row strong{text-align:right}.targets{display:grid;grid-template-columns:1fr 1fr;gap:9px}.target{background:#102b28;border:1px solid #285743;border-radius:10px;padding:11px}.target .k,.target small{color:#a9d6c4}.target .v{font-size:20px;color:#65dfa9}.warning{display:none;margin-top:11px;background:#351d27;color:#ffc2c2;border:1px solid #704047;border-radius:9px;padding:9px;font-size:12px}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:18px 0}.add-btn{background:#1c477b;border-color:#376cb0}.reset-btn{font-size:12px;color:var(--muted)}.note{font-size:12px;margin-top:12px}.footer{text-align:center;color:#71829c;font-size:11px;margin:22px 0}
+@media(max-width:750px){.settings-grid{grid-template-columns:1fr 1fr}.stats{grid-template-columns:1fr 1fr}.wrap{margin:20px auto}}@media(max-width:430px){.settings-grid,.trade-fields{grid-template-columns:1fr}.instrument-head{padding:11px}.summary-meta{display:none}.instrument-body{padding:13px}.rows{grid-template-columns:1fr}.instrument-top{align-items:flex-start}.qty{font-size:29px}}
+</style>
+</head>
 <body><main class="wrap">
-<header class="head"><div><h1>Trading Risk Calculator</h1><p class="sub">Intraday position sizing · Risk first, quantity second.</p></div><span class="tag">Personal trading tool</span></header>
-<div class="grid">
-<section class="card"><h2>Trade inputs</h2><div class="side"><button id="long" class="active" type="button">Buy / Long</button><button id="short" type="button">Sell / Short</button></div>
-<div class="fields">
-<div class="field"><label for="capital">Total capital (₹)</label><input id="capital" type="number" min="0" value="10000"></div>
-<div class="field"><label for="reserve">Safety reserve (₹)</label><input id="reserve" type="number" min="0" value="600"></div>
-<div class="field"><label for="leverage">Leverage (×)</label><input id="leverage" type="number" min="0" step="any" value="5"></div>
-<div class="field"><label for="risk">Maximum risk per trade (₹)</label><input id="risk" type="number" min="0" step="any" value="500"></div>
-<div class="field"><label for="entry">Entry price (₹)</label><input id="entry" type="number" min="0" step="any" value="1125"></div>
-<div class="field"><label for="sl">Stop-loss price (₹)</label><input id="sl" type="number" min="0" step="any" value="1115"></div>
-</div><p class="hint">Cash-equity quantity is rounded down to whole shares. Confirm actual MIS margin in Kite before placing an order.</p><div id="warning" class="warning" role="alert"></div></section>
-<section class="card" aria-live="polite"><h2>Position size result</h2>
-<div class="hero"><div class="k">Maximum shares you can take</div><div class="big" id="qty">41</div><div class="k" id="reason">Limited by buying power</div></div>
-<div class="stats">
-<div class="stat"><div class="k">Planned stop-loss risk</div><div class="v" id="actualRisk">₹410</div></div>
-<div class="stat"><div class="k">Position value</div><div class="v" id="position">₹46,125</div></div>
-<div class="stat"><div class="k">Estimated margin used</div><div class="v" id="margin">₹9,225</div></div>
-<div class="stat"><div class="k">Capital left after margin</div><div class="v" id="left">₹775</div></div></div>
-<div class="section">Quantity limits</div>
-<div class="row"><span>Capital available for margin</span><strong id="usable">₹9,400</strong></div>
-<div class="row"><span>Buying power after leverage</span><strong id="power">₹47,000</strong></div>
-<div class="row"><span>Maximum shares by margin</span><strong id="mq">41</strong></div>
-<div class="row"><span>Maximum shares by risk</span><strong id="rq">50</strong></div>
-<div class="section">Profit targets</div><div class="targets">
-<div class="target"><div class="k">1 : 2 target</div><div class="v" id="t2">₹1,145</div><small id="p2">Gross profit: ₹820</small></div>
-<div class="target"><div class="k">1 : 3 target</div><div class="v" id="t3">₹1,155</div><small id="p3">Gross profit: ₹1,230</small></div></div>
-<p class="note">Estimates exclude brokerage, STT, exchange charges, GST, stamp duty and slippage. Actual broker margin varies by stock and market conditions. Stop-loss execution can slip.</p>
-</section></div><div class="footer">Calculations run locally in your browser. No broker login or trading data is collected.</div></main>
+<header><div><h1>Trading Risk Calculator</h1><p class="sub">Manage multiple intraday setups in one place.</p></div><span class="tag">Personal trading tool</span></header>
+
+<section class="card">
+<h2>Account-wide settings</h2>
+<div class="settings-grid">
+<div class="field"><label for="capital">Total trading capital (₹)</label><input id="capital" type="number" min="0" step="any" value="10000"></div>
+<div class="field">
+<div class="field-head"><label id="reserveLabel" for="reserve">Safety reserve</label><div class="unit-toggle"><button id="reserveAmount" class="active" type="button">₹</button><button id="reservePercent" type="button">%</button></div></div>
+<input id="reserve" type="number" min="0" step="any" value="600"><div class="calculated" id="reserveCalculated">Reserve: ₹600.00</div>
+</div>
+<div class="field">
+<div class="field-head"><label id="riskLabel" for="risk">Maximum risk per trade</label><div class="unit-toggle"><button id="riskAmount" class="active" type="button">₹</button><button id="riskPercent" type="button">%</button></div></div>
+<input id="risk" type="number" min="0" step="any" value="500"><div class="calculated" id="riskCalculated">Risk per trade: ₹500.00</div>
+</div>
+<div class="field"><label for="leverage">Assumed intraday leverage (×)</label><input id="leverage" type="number" min="0" step="any" value="5"></div>
+</div>
+<p class="hint">Percentage settings are calculated from total capital. These account-wide settings apply to every instrument below.</p>
+</section>
+
+<section class="card instrument-list"><div class="instrument-list-head"><div><h2>Instrument</h2><div class="hint" id="count">1 instrument</div></div><button class="add-btn" id="addInstrument" type="button">＋ Add instrument</button></div><div id="instruments"></div></section>
+<div class="toolbar"><span class="hint">Your settings and instrument calculations are saved in this browser.</span><button class="reset-btn" id="resetAll" type="button">Reset all</button></div>
+<div class="note">Position sizing is an estimate. Actual MIS margin varies by stock and broker. Calculations exclude brokerage, taxes, other charges and slippage. Stop-loss execution can be worse than the planned price.</div>
+<div class="footer">Runs locally in your browser · No broker login or trading data is collected.</div>
+</main>
 <script>
-(()=>{let side='long';const ids=['capital','reserve','leverage','risk','entry','sl'];const $=id=>document.getElementById(id);const fmt=n=>'₹'+n.toLocaleString('en-IN',{maximumFractionDigits:2});const set=(id,v)=>$(id).textContent=v;
-function calc(){const x=Object.fromEntries(ids.map(id=>[id,Number($(id).value)]));const warn=$('warning');if(ids.some(id=>!$(id).value.trim())||Object.values(x).some(v=>!Number.isFinite(v))){warn.style.display='block';warn.textContent='Enter valid numbers in every field.';return}
-const {capital,reserve,leverage,risk,entry,sl}=x;if(capital<=0||entry<=0||leverage<=0||risk<=0||reserve<0||reserve>=capital||sl<=0){warn.style.display='block';warn.textContent='Capital, entry, leverage and risk must be positive. Reserve must be below capital.';return}
-const d=side==='long'?entry-sl:sl-entry;if(d<=0){warn.style.display='block';warn.textContent=side==='long'?'For a long trade, stop-loss must be below entry.':'For a short trade, stop-loss must be above entry.';return}warn.style.display='none';
-const usable=capital-reserve,power=usable*leverage,mq=Math.floor(power/entry),rq=Math.floor(risk/d),q=Math.min(mq,rq),value=q*entry,margin=value/leverage,actual=q*d,t2=entry+(side==='long'?2:-2)*d,t3=entry+(side==='long'?3:-3)*d;
-set('qty',q.toLocaleString('en-IN'));set('reason',q===0?'No share fits both limits':rq<mq?'Quantity limited by risk budget':mq<rq?'Quantity limited by assumed buying power':'Both limits give same quantity');
-set('actualRisk',fmt(actual));set('position',fmt(value));set('margin',fmt(margin));set('left',fmt(capital-margin));set('usable',fmt(usable));set('power',fmt(power));set('mq',mq.toLocaleString('en-IN'));set('rq',rq.toLocaleString('en-IN'));set('t2',fmt(t2));set('t3',fmt(t3));set('p2','Gross profit: '+fmt(q*d*2));set('p3','Gross profit: '+fmt(q*d*3));}
-$('long').onclick=()=>{side='long';$('long').classList.add('active');$('short').classList.remove('active');calc()};$('short').onclick=()=>{side='short';$('short').classList.add('active');$('long').classList.remove('active');calc()};ids.forEach(id=>$(id).addEventListener('input',calc));calc();})();
+(()=>{
+const $=id=>document.getElementById(id);
+const STORE='tradingRiskCalculatorMultiV3';
+const defaultState={
+ settings:{capital:'10000',reserve:'600',reserveMode:'amount',risk:'500',riskMode:'amount',leverage:'5'},
+ instruments:[{id:1,name:'INFY',entry:'1125',sl:'1115',side:'long',open:false}]
+};
+let state=structuredClone(defaultState), nextId=2;
+const money=n=>'₹'+Number(n).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+const whole=n=>Math.max(0,Math.floor(n));
+function persist(){try{localStorage.setItem(STORE,JSON.stringify(state));}catch(e){}}
+function load(){try{const saved=JSON.parse(localStorage.getItem(STORE));if(saved&&saved.settings&&Array.isArray(saved.instruments)&&saved.instruments.length){state=saved;nextId=Math.max(0,...state.instruments.map(x=>Number(x.id)||0))+1;}}catch(e){}}
+function settingsFromUI(){state.settings={capital:$('capital').value,reserve:$('reserve').value,reserveMode:state.settings.reserveMode,risk:$('risk').value,riskMode:state.settings.riskMode,leverage:$('leverage').value};}
+function computedSettings(){
+const s=state.settings,capital=Number(s.capital),reserveInput=Number(s.reserve),riskInput=Number(s.risk),leverage=Number(s.leverage);
+const reserve=s.reserveMode==='percent'?capital*reserveInput/100:reserveInput;
+const risk=s.riskMode==='percent'?capital*riskInput/100:riskInput;
+return {capital,reserve,risk,leverage,usable:capital-reserve,buyingPower:(capital-reserve)*leverage};
+}
+function renderSettings(){
+const s=state.settings;
+$('capital').value=s.capital;$('reserve').value=s.reserve;$('risk').value=s.risk;$('leverage').value=s.leverage;
+$('reserveAmount').classList.toggle('active',s.reserveMode==='amount');$('reservePercent').classList.toggle('active',s.reserveMode==='percent');
+$('riskAmount').classList.toggle('active',s.riskMode==='amount');$('riskPercent').classList.toggle('active',s.riskMode==='percent');
+$('reserveLabel').textContent=s.reserveMode==='percent'?'Safety reserve (% of capital)':'Safety reserve (₹)';
+$('riskLabel').textContent=s.riskMode==='percent'?'Maximum risk per trade (% of capital)':'Maximum risk per trade (₹)';
+const c=computedSettings();
+$('reserveCalculated').textContent='Reserve: '+money(c.reserve);
+$('riskCalculated').textContent='Risk per trade: '+money(c.risk);
+}
+function validateGlobal(c){
+if(!Number.isFinite(c.capital)||c.capital<=0)return 'Enter a valid total capital greater than zero.';
+if(!Number.isFinite(c.reserve)||c.reserve<0||c.reserve>=c.capital)return 'Safety reserve must be zero or more and lower than total capital.';
+if(state.settings.reserveMode==='percent'&&Number(state.settings.reserve)>=100)return 'Safety reserve percentage must be below 100%.';
+if(state.settings.riskMode==='percent'&&(Number(state.settings.risk)<=0||Number(state.settings.risk)>100))return 'Risk percentage must be greater than 0% and no more than 100%.';
+if(!Number.isFinite(c.risk)||c.risk<=0)return 'Maximum risk per trade must be greater than zero.';
+if(!Number.isFinite(c.leverage)||c.leverage<=0)return 'Enter a valid leverage greater than zero.';
+return '';
+}
+function calcInstrument(inst){
+const c=computedSettings(),entry=Number(inst.entry),sl=Number(inst.sl);
+let err=validateGlobal(c);
+if(!err&&(!inst.name.trim()))err='Enter an instrument name.';
+if(!err&&(!Number.isFinite(entry)||entry<=0||!Number.isFinite(sl)||sl<=0))err='Enter valid entry and stop-loss prices.';
+const distance=inst.side==='long'?entry-sl:sl-entry;
+if(!err&&distance<=0)err=inst.side==='long'?'For a long trade, stop-loss must be below entry.':'For a short trade, stop-loss must be above entry.';
+if(err)return {error:err};
+const marginQty=whole(c.buyingPower/entry),riskQty=whole(c.risk/distance),qty=Math.min(marginQty,riskQty);
+const position=qty*entry,margin=position/c.leverage,actualRisk=qty*distance;
+const target2=entry+(inst.side==='long'?2:-2)*distance,target3=entry+(inst.side==='long'?3:-3)*distance;
+return {c,entry,sl,distance,marginQty,riskQty,qty,position,margin,actualRisk,target2,target3};
+}
+function instrumentHTML(inst){
+return `<details class="card instrument" data-id="${inst.id}">
+<summary><span class="instrument-name">${escapeHTML(inst.name||'New instrument')}</span><span class="summary-meta" data-summary>Needs input</span></summary>
+<div class="instrument-body">
+<div class="instrument-top"><div class="field"><label>INSTRUMENT NAME</label><input data-field="name" type="text" maxlength="40" placeholder="e.g. INFY, NIFTY, RELIANCE" value="${escapeAttr(inst.name)}"></div><button class="remove" type="button" data-action="remove">Remove</button></div>
+<div class="side"><button type="button" data-side="long" class="${inst.side==='long'?'active':''}">Buy / Long</button><button type="button" data-side="short" class="${inst.side==='short'?'active':''}">Sell / Short</button></div>
+<div class="trade-fields">
+<div class="field"><label>ENTRY PRICE (₹)</label><input data-field="entry" type="number" min="0" step="any" placeholder="Entry price" value="${escapeAttr(inst.entry)}"></div>
+<div class="field"><label>STOP-LOSS PRICE (₹)</label><input data-field="sl" type="number" min="0" step="any" placeholder="Stop-loss" value="${escapeAttr(inst.sl)}"></div>
+</div>
+<div class="warning" data-warning role="alert"></div>
+<div class="result">
+<div class="hero"><div class="k">MAXIMUM SHARES / UNITS</div><div class="qty" data-out="qty">—</div><div class="k" data-out="reason">Enter valid trade details</div></div>
+<div class="stats">
+<div class="stat"><div class="k">Planned stop-loss risk</div><div class="v" data-out="actualRisk">—</div></div>
+<div class="stat"><div class="k">Position value</div><div class="v" data-out="position">—</div></div>
+<div class="stat"><div class="k">Estimated margin used</div><div class="v" data-out="margin">—</div></div>
+<div class="stat"><div class="k">Capital left after margin</div><div class="v" data-out="left">—</div></div>
+</div>
+<div class="section">Quantity limits</div>
+<div class="rows">
+<div class="row"><span>Available margin capital</span><strong data-out="usable">—</strong></div>
+<div class="row"><span>Buying power</span><strong data-out="power">—</strong></div>
+<div class="row"><span>Maximum quantity by margin</span><strong data-out="marginQty">—</strong></div>
+<div class="row"><span>Maximum quantity by risk</span><strong data-out="riskQty">—</strong></div>
+</div>
+<div class="section">Profit targets</div><div class="targets">
+<div class="target"><div class="k">1 : 2 TARGET</div><div class="v" data-out="target2">—</div><small data-out="profit2"></small></div>
+<div class="target"><div class="k">1 : 3 TARGET</div><div class="v" data-out="target3">—</div><small data-out="profit3"></small></div>
+</div>
+</div></div></details>`;
+}
+function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function escapeAttr(s){return escapeHTML(s);}
+function updateOne(card,inst){
+const r=calcInstrument(inst),warning=card.querySelector('[data-warning]');
+if(r.error){warning.style.display='block';warning.textContent=r.error;card.querySelectorAll('[data-out]').forEach(x=>x.textContent='—');card.querySelector('[data-summary]').textContent='Needs input';return;}
+warning.style.display='none';
+const put=(key,value)=>{const node=card.querySelector(`[data-out="${key}"]`);if(node)node.textContent=value;};
+put('qty',r.qty.toLocaleString('en-IN'));put('reason',r.qty===0?'No unit fits both limits':r.riskQty<r.marginQty?'Quantity limited by risk budget':r.marginQty<r.riskQty?'Quantity limited by available margin':'Both limits give the same quantity');
+put('actualRisk',money(r.actualRisk));put('position',money(r.position));put('margin',money(r.margin));put('left',money(r.c.capital-r.margin));
+put('usable',money(r.c.usable));put('power',money(r.c.buyingPower));put('marginQty',r.marginQty.toLocaleString('en-IN'));put('riskQty',r.riskQty.toLocaleString('en-IN'));
+put('target2',money(r.target2));put('target3',money(r.target3));put('profit2','Gross profit: '+money(r.actualRisk*2));put('profit3','Gross profit: '+money(r.actualRisk*3));
+card.querySelector('[data-summary]').textContent=r.qty+' units · '+money(r.actualRisk)+' risk';
+}
+function renderInstruments(){
+$('instruments').innerHTML=state.instruments.map(instrumentHTML).join('');
+$('count').textContent=state.instruments.length+' instrument'+(state.instruments.length===1?'':'s');
+$('instruments').querySelectorAll('.instrument').forEach(card=>{
+const id=Number(card.dataset.id),inst=state.instruments.find(x=>x.id===id);
+card.addEventListener('toggle',()=>{inst.open=card.open;persist();},{capture:true});
+card.querySelectorAll('[data-field]').forEach(input=>input.addEventListener('input',()=>{
+inst[input.dataset.field]=input.value;
+if(input.dataset.field==='name')card.querySelector('.instrument-name').textContent=input.value||'New instrument';
+updateOne(card,inst);persist();
+}));
+card.querySelectorAll('[data-side]').forEach(btn=>btn.addEventListener('click',()=>{
+inst.side=btn.dataset.side;card.querySelectorAll('[data-side]').forEach(b=>b.classList.toggle('active',b===btn));updateOne(card,inst);persist();
+}));
+card.querySelector('[data-action="remove"]').addEventListener('click',()=>{
+if(state.instruments.length===1){alert('Keep at least one instrument calculation.');return;}
+if(confirm('Remove '+(inst.name||'this instrument')+' calculation?')){state.instruments=state.instruments.filter(x=>x.id!==id);persist();renderInstruments();}
+});
+updateOne(card,inst);
+});
+}
+function refreshAll(){settingsFromUI();renderSettings();document.querySelectorAll('.instrument').forEach(card=>{const inst=state.instruments.find(x=>x.id===Number(card.dataset.id));if(inst)updateOne(card,inst);});persist();}
+function setMode(which,mode){state.settings[which+'Mode']=mode;renderSettings();persist();refreshAll();}
+function bindSettings(){
+['capital','reserve','risk','leverage'].forEach(id=>$(id).addEventListener('input',refreshAll));
+$('reserveAmount').onclick=()=>setMode('reserve','amount');$('reservePercent').onclick=()=>setMode('reserve','percent');
+$('riskAmount').onclick=()=>setMode('risk','amount');$('riskPercent').onclick=()=>setMode('risk','percent');
+$('addInstrument').onclick=()=>{
+state.instruments.forEach(x=>x.open=false);
+state.instruments.push({id:nextId++,name:'',entry:'',sl:'',side:'long',open:false});
+persist();renderInstruments();
+const last=$('instruments').lastElementChild;last.scrollIntoView({behavior:'smooth',block:'start'});last.querySelector('[data-field="name"]').focus();
+};
+$('resetAll').onclick=()=>{if(confirm('Reset all settings and remove added instruments?')){state=structuredClone(defaultState);nextId=2;persist();renderSettings();renderInstruments();}};
+}
+load();renderSettings();bindSettings();renderInstruments();
+})();
 </script></body></html>
