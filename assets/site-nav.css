@@ -1,5 +1,5 @@
 :root{--nav-bg:#0b1423;--nav-panel:#101d30;--nav-border:#263951;--nav-text:#e8f0fa;--nav-muted:#9aabc0;--nav-accent:#68b7ff}
-body{padding-left:258px!important;transition:padding-left .2s}
+html{overflow-x:clip}body{padding-left:258px!important;transition:padding-left .2s;min-width:0}img,svg,video,canvas{max-width:100%}
 #site-sidebar{position:fixed;z-index:1000;inset:0 auto 0 0;width:258px;background:var(--nav-bg);border-right:1px solid var(--nav-border);color:var(--nav-text);display:flex;flex-direction:column;padding:20px 14px;overflow-y:auto;font:14px/1.4 system-ui,-apple-system,Segoe UI,sans-serif}
 #site-sidebar .nav-brand{font-size:16px;font-weight:800;padding:5px 10px 18px;text-decoration:none;color:var(--nav-text);letter-spacing:.1px}
 #site-sidebar .nav-group{margin:12px 0 5px;padding:0 10px;color:var(--nav-muted);font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase}
@@ -9,7 +9,22 @@ body{padding-left:258px!important;transition:padding-left .2s}
 #site-sidebar .nav-foot{margin-top:auto;padding:14px 10px 2px;color:var(--nav-muted);font-size:11px}
 #nav-toggle{display:none;position:fixed;z-index:1002;top:12px;left:12px;border:1px solid var(--nav-border);border-radius:9px;background:#101d30;color:#fff;padding:10px 12px;min-width:44px;min-height:44px;font-size:18px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
 #nav-scrim{display:none;position:fixed;z-index:999;inset:0;background:#0009}
-@media(max-width:760px){body{padding-left:0!important}.wrap{padding-top:78px!important}.shell{padding-top:78px!important}main{scroll-margin-top:72px}#site-sidebar{transform:translateX(-105%);transition:transform .2s;box-shadow:12px 0 40px #0008}body.nav-open #site-sidebar{transform:translateX(0)}#nav-toggle{display:block}body.nav-open #nav-scrim{display:block}}
+@media(max-width:760px){body{padding-left:0!important}body.nav-open{overflow:hidden}.wrap{padding-top:78px!important}.shell{padding-top:78px!important}main{scroll-margin-top:72px}#site-sidebar{transform:translateX(-105%);transition:transform .2s;box-shadow:12px 0 40px #0008}body.nav-open #site-sidebar{transform:translateX(0)}#nav-toggle{display:block}body.nav-open #nav-scrim{display:block}}
 
 @media(max-width:380px){#site-sidebar{width:min(290px,86vw);padding:16px 12px}#site-sidebar a.nav-link{min-height:44px}.panel{padding:16px}.results{grid-template-columns:1fr}.metric strong{font-size:20px}}
 @media(prefers-reduced-motion:reduce){body,#site-sidebar{transition:none!important}}
+
+/* Shared mobile ergonomics for every calculator and content page */
+@media(max-width:760px){
+  .wrap{width:calc(100% - 24px)!important;max-width:900px}
+  .panel,.card{min-width:0}
+  input,select,textarea{font-size:16px!important;max-width:100%}
+  button,.btn,[role=button]{min-height:44px}
+  .btn{width:100%;justify-content:center}
+  #site-sidebar a.nav-link{min-height:44px}
+}
+@media(max-width:360px){
+  .wrap{width:calc(100% - 20px)!important}
+  .panel{padding:14px!important}
+  h1{overflow-wrap:anywhere}
+}
