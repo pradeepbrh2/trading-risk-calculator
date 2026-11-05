@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0b1220">
-<title>Trade Journal & Net P&L Analytics | Position Sizing Calculator</title>
+<title>Trade Journal &amp; Net P&amp;L Analytics | Position Sizing Calculator</title>
 <meta name="description" content="Calculate share quantity, position size, stop-loss risk, margin and 1:2 or 1:3 targets with this free India-focused position sizing calculator.">
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
 <link rel="canonical" href="https://pradeepbrh2.github.io/trading-risk-calculator/">
@@ -328,7 +328,7 @@ body[data-page-view="risk"] .header-link,body[data-page-view="journal"] .header-
 
 </div>
 
-<div class="note">Position sizing is an estimate. Actual MIS margin varies by stock and broker. Calculations exclude brokerage, taxes, other charges and slippage. Stop-loss execution can be worse than the planned price.</div>
+<div class="note">Position sizing is an estimate. Actual MIS margin varies by stock and broker. Calculations use your configurable estimated broker costs and slippage settings; actual costs and stop-loss execution can differ. Stop-loss execution can be worse than the planned price.</div>
 
 
 <section class="card seo-answer" id="quick-answer" aria-labelledby="quick-answer-title">
@@ -649,7 +649,7 @@ async function exportExcel(){
       { header: 'Entry Price (₹)', key: 'entry', width: 17 },
       { header: 'Exit Price (₹)', key: 'exit', width: 17 },
       { header: 'Gross P&L (₹)', key: 'pnl', width: 18 },
-      { header: 'Estimated Charges (₹)', key: 'charges', width: 21 },
+      { header: 'Estimated Costs (₹)', key: 'charges', width: 21 },
       { header: 'Net P&L (₹)', key: 'net', width: 18 },
       { header: 'Notes', key: 'notes', width: 36 }
     ];
@@ -769,7 +769,7 @@ function addJournalTrade(){
 }
 function exportJournalCsv(){
  if(!journalTrades.length){alert('There are no journal trades to export yet.');return;}
- const cols=['Date','Instrument','Direction','Quantity','Entry Price','Exit Price','Gross P&L','Estimated Charges','Net P&L','Notes'];
+ const cols=['Date','Instrument','Direction','Quantity','Entry Price','Exit Price','Gross P&L','Estimated Costs','Net P&L','Notes'];
  const quote=v=>{let x=String(v??'');if(/^[=+@-]/.test(x))x="'"+x;return '"'+x.replace(/"/g,'""')+'"';};
  const lines=[cols,...journalTrades.map(t=>[t.date,t.symbol,t.side,t.qty,t.entry,t.exit,tradeGross(t),tradeEstimatedCosts(t),tradeNet(t),t.notes])].map(r=>r.map(quote).join(','));
  const blob=new Blob(['\uFEFF'+lines.join('\r\n')],{type:'text/csv;charset=utf-8;'});
@@ -785,11 +785,11 @@ function renderRiskDashboard(){
  const today=localISODate(),todayTrades=journalTrades.filter(t=>t.date===today),dailyPnl=todayTrades.reduce((a,t)=>a+tradeNet(t),0);
  const lossUsed=Math.max(0,-dailyPnl),remaining=Math.max(0,dailyLimit-lossUsed);
  const active=state.instruments.map(i=>({i,r:calcInstrument(i)})).filter(x=>!x.r.error&&x.r.qty>0);
- const exposure=active.reduce((a,x)=>a+x.r.position,0),margin=active.reduce((a,x)=>a+x.r.margin,0),risk=active.reduce((a,x)=>a+x.r.actualRisk,0);
+ const exposure=active.reduce((a,x)=>a+x.r.position,0),margin=active.reduce((a,x)=>a+x.r.margin,0),risk=active.reduce((a,x)=>a+x.r.actualRisk+estimateTradeCharges({side:x.i.side,qty:x.r.qty,entry:x.r.entry,exit:x.r.sl}).total,0);
  $('exposureMetrics').innerHTML=[
   ['Planned position value',journalMoney(exposure)],
   ['Estimated margin',journalMoney(margin)],
-  ['Combined planned risk',journalMoney(risk)],
+  ['Combined planned risk incl. est. costs',journalMoney(risk)],
   ['Active setups',String(active.length)]
  ].map(([k,v])=>'<div class="journal-metric"><span class="k">'+k+'</span><strong>'+v+'</strong></div>').join('');
  const breached=dailyLimit>0&&lossUsed>=dailyLimit&&lossUsed>0;
