@@ -192,6 +192,25 @@ body{background:radial-gradient(ellipse at 78% 7%,rgba(22,91,155,.22),transparen
 .seo-answer strong{color:#fff}
 .seo-answer .answer-note{font-size:12px;color:#9eafc7}
 </style>
+<style>
+.journal-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:12px 0}
+.journal-grid .field label{font-size:12px;color:var(--muted)}
+.journal-grid select,.journal-grid input{width:100%;min-width:0;background:#0c1627;border:1px solid #30425e;color:var(--text);border-radius:9px;padding:11px;font:inherit}
+.journal-actions{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0}
+.journal-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:14px 0}
+.journal-metric{background:#0c1627;border:1px solid var(--line);border-radius:10px;padding:11px}
+.journal-metric strong{display:block;font-size:18px;margin-top:4px}
+.journal-table-wrap{overflow-x:auto}
+.journal-table{width:100%;border-collapse:collapse;min-width:720px;font-size:12px}
+.journal-table th,.journal-table td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+.journal-table th:first-child,.journal-table td:first-child{text-align:left}
+.journal-table th{color:#b9cce6;background:#15243a}
+.journal-table td:last-child button{background:#351f2a;color:#ffb4bd;border:1px solid #653b48;border-radius:6px;padding:4px 7px;cursor:pointer}
+.journal-empty{padding:18px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:10px}
+.pnl-positive{color:#65dfa9}.pnl-negative{color:#ff929c}
+@media(max-width:700px){.journal-grid{grid-template-columns:1fr 1fr}.journal-metrics{grid-template-columns:1fr 1fr}}
+@media(max-width:430px){.journal-grid{grid-template-columns:1fr}}
+</style>
 </head>
 <body><a class="skip-link" href="#calculator">Skip to calculator</a>
 <main class="wrap">
@@ -230,6 +249,24 @@ body{background:radial-gradient(ellipse at 78% 7%,rgba(22,91,155,.22),transparen
 
 <section class="card instrument-list"><div class="instrument-list-head"><div><h2>Instrument</h2><div class="hint" id="count">1 instrument</div></div><button class="add-btn" id="addInstrument" type="button">＋ Add instrument</button></div><div id="instruments"></div></section>
 <div class="toolbar"><span class="hint">Your settings and instrument calculations are saved in this browser.</span><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="add-btn" id="exportExcel" type="button">↓ Download Excel (.xlsx)</button><button class="reset-btn" id="resetAll" type="button">Reset all</button></div></div>
+<section class="card" id="trade-journal" aria-labelledby="journal-title">
+  <h2 id="journal-title">Trade Journal &amp; Realised P&amp;L</h2>
+  <p class="hint">Record completed trades manually. Results are stored in this browser only.</p>
+  <div class="journal-grid">
+    <div class="field"><label for="journalDate">TRADE DATE</label><input id="journalDate" type="date"></div>
+    <div class="field"><label for="journalSymbol">INSTRUMENT</label><input id="journalSymbol" maxlength="40" placeholder="e.g. INFY"></div>
+    <div class="field"><label for="journalSide">DIRECTION</label><select id="journalSide"><option value="long">Buy / Long</option><option value="short">Sell / Short</option></select></div>
+    <div class="field"><label for="journalQty">QUANTITY</label><input id="journalQty" type="number" min="1" step="1" placeholder="Shares / units"></div>
+    <div class="field"><label for="journalEntry">ENTRY PRICE (₹)</label><input id="journalEntry" type="number" min="0.01" step="any" placeholder="Entry"></div>
+    <div class="field"><label for="journalExit">EXIT PRICE (₹)</label><input id="journalExit" type="number" min="0.01" step="any" placeholder="Exit"></div>
+    <div class="field" style="grid-column:span 2"><label for="journalNotes">NOTES (OPTIONAL)</label><input id="journalNotes" maxlength="180" placeholder="Setup, mistake, lesson learned..."></div>
+  </div>
+  <div class="journal-actions"><button class="add-btn" id="saveJournalTrade" type="button">＋ Save completed trade</button><button class="reset-btn" id="clearJournalForm" type="button">Clear form</button><button class="reset-btn" id="exportJournalCsv" type="button">↓ Export journal CSV</button></div>
+  <div class="journal-metrics" id="journalMetrics"></div>
+  <div class="journal-table-wrap" id="journalTableWrap"><div class="journal-empty">No completed trades recorded yet.</div></div>
+  <p class="hint">Gross P&amp;L = (Exit − Entry) × Quantity for long trades, reversed for short trades. Charges and slippage are not deducted.</p>
+</section>
+
 <div class="note">Position sizing is an estimate. Actual MIS margin varies by stock and broker. Calculations exclude brokerage, taxes, other charges and slippage. Stop-loss execution can be worse than the planned price.</div>
 
 
@@ -553,6 +590,42 @@ async function exportExcel(){
   }
 }
 
+
+const JOURNAL_STORE='tradingRiskCalculatorJournalV1';
+let journalTrades=[];
+function loadJournal(){try{const v=JSON.parse(localStorage.getItem(JOURNAL_STORE)||'[]');if(Array.isArray(v))journalTrades=v;}catch(e){journalTrades=[];}}
+function saveJournal(){try{localStorage.setItem(JOURNAL_STORE,JSON.stringify(journalTrades));}catch(e){alert('Could not save journal data. Browser storage may be full or disabled.');}}
+function journalMoney(n){return '₹'+Number(n).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function journalEscape(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function renderJournal(){
+ const today=new Date().toLocaleDateString('en-CA');
+ const todays=journalTrades.filter(t=>t.date===today),total=todays.reduce((a,t)=>a+t.pnl,0),wins=journalTrades.filter(t=>t.pnl>0).length;
+ const winRate=journalTrades.length?Math.round(wins/journalTrades.length*100):0;
+ $('journalMetrics').innerHTML=[
+  ['Today realised P&L',journalMoney(total)],['Trades today',todays.length],['All-time trades',journalTrades.length],['Win rate',winRate+'%']
+ ].map(([k,v])=>'<div class="journal-metric"><span class="k">'+k+'</span><strong>'+v+'</strong></div>').join('');
+ if(!journalTrades.length){$('journalTableWrap').innerHTML='<div class="journal-empty">No completed trades recorded yet.</div>';return;}
+ const rows=[...journalTrades].sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id).map(t=>'<tr><td>'+journalEscape(t.date)+'</td><td>'+journalEscape(t.symbol)+'</td><td>'+ (t.side==='long'?'Long':'Short')+'</td><td>'+t.qty+'</td><td>'+journalMoney(t.entry)+'</td><td>'+journalMoney(t.exit)+'</td><td class="'+(t.pnl>=0?'pnl-positive':'pnl-negative')+'">'+journalMoney(t.pnl)+'</td><td>'+journalEscape(t.notes)+'</td><td><button type="button" data-delete-trade="'+t.id+'" aria-label="Delete '+journalEscape(t.symbol)+' trade">Delete</button></td></tr>').join('');
+ $('journalTableWrap').innerHTML='<table class="journal-table"><thead><tr><th>Date</th><th>Instrument</th><th>Side</th><th>Qty</th><th>Entry</th><th>Exit</th><th>Gross P&L</th><th>Notes</th><th>Action</th></tr></thead><tbody>'+rows+'</tbody></table>';
+ $('journalTableWrap').querySelectorAll('[data-delete-trade]').forEach(b=>b.addEventListener('click',()=>{const id=Number(b.dataset.deleteTrade);if(confirm('Delete this journal entry?')){journalTrades=journalTrades.filter(t=>t.id!==id);saveJournal();renderJournal();}}));
+}
+function clearJournalForm(){['journalSymbol','journalQty','journalEntry','journalExit','journalNotes'].forEach(id=>$(id).value='');$('journalSide').value='long';}
+function addJournalTrade(){
+ const date=$('journalDate').value,symbol=$('journalSymbol').value.trim(),qty=Number($('journalQty').value),entry=Number($('journalEntry').value),exit=Number($('journalExit').value),side=$('journalSide').value;
+ if(!date||!symbol||!Number.isInteger(qty)||qty<=0||!Number.isFinite(entry)||entry<=0||!Number.isFinite(exit)||exit<=0){alert('Enter a date, instrument, whole-number quantity, and valid entry and exit prices.');return;}
+ const pnl=(side==='long'?exit-entry:entry-exit)*qty;
+ journalTrades.push({id:Date.now(),date,symbol,side,qty,entry,exit,pnl,notes:$('journalNotes').value.trim()});
+ saveJournal();renderJournal();clearJournalForm();
+}
+function exportJournalCsv(){
+ if(!journalTrades.length){alert('There are no journal trades to export yet.');return;}
+ const cols=['Date','Instrument','Direction','Quantity','Entry Price','Exit Price','Gross P&L','Notes'];
+ const quote=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+ const lines=[cols,...journalTrades.map(t=>[t.date,t.symbol,t.side,t.qty,t.entry,t.exit,t.pnl,t.notes])].map(r=>r.map(quote).join(','));
+ const blob=new Blob(['\uFEFF'+lines.join('\r\n')],{type:'text/csv;charset=utf-8;'});
+ const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='trade-journal-'+new Date().toISOString().slice(0,10)+'.csv';a.click();URL.revokeObjectURL(url);
+}
+
 function bindSettings(){
 $('exportExcel').addEventListener('click', exportExcel);
 ['capital','reserve','risk','leverage'].forEach(id=>$(id).addEventListener('input',refreshAll));
@@ -569,5 +642,6 @@ $('resetAll').onclick=()=>{if(confirm('Reset all settings and remove added instr
 $('getStarted').addEventListener('click',()=>{$('calculator').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});});
 $('skipWelcome').addEventListener('click',()=>{$('welcomeHero').classList.add('is-hidden');});
 load();renderSettings();bindSettings();renderInstruments();
+loadJournal();$('journalDate').value=new Date().toLocaleDateString('en-CA');$('saveJournalTrade').addEventListener('click',addJournalTrade);$('clearJournalForm').addEventListener('click',clearJournalForm);$('exportJournalCsv').addEventListener('click',exportJournalCsv);renderJournal();
 })();
 </script></body></html>
