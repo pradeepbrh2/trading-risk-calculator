@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1220"><title>Trading Risk Calculator</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#111c2e;--muted:#91a0b8;--text:#edf3ff;--line:#26364f;--blue:#4f8cff;--green:#35c98a}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#0b1220,#101b2d);font:15px/1.5 Segoe UI,Arial,sans-serif;color:var(--text);min-height:100vh}.wrap{max-width:960px;margin:35px auto;padding:0 18px}.head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px}h1{font-size:25px;margin:0}.sub,.hint,.note{color:var(--muted)}.sub{margin:4px 0}.tag{border:1px solid #2d4668;border-radius:25px;padding:6px 11px;color:#b9d2ff;font-size:12px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px}h2{font-size:16px;margin:0 0 16px}.side{display:flex;gap:8px;margin-bottom:16px}button{flex:1;border:1px solid var(--line);background:#17243a;color:var(--text);border-radius:9px;padding:10px;cursor:pointer;font-weight:600}.active{background:#183b70;border-color:var(--blue)}.fields{display:grid;grid-template-columns:1fr 1fr;gap:13px}.field{display:flex;flex-direction:column;gap:6px}label{font-size:12px;color:var(--muted)}input{width:100%;background:#0c1627;border:1px solid #30425e;color:var(--text);border-radius:9px;padding:12px;font:inherit;outline:none}input:focus{border-color:var(--blue)}.hint,.note{font-size:12px}.hero{background:#123b37;border:1px solid #286457;border-radius:13px;padding:16px;margin-bottom:13px}.k{font-size:12px;color:var(--muted)}.hero .k{color:#b6d8d0}.big{font-size:36px;font-weight:750;color:#71e1b5}.stats,.targets{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat,.target{background:#0c1627;border:1px solid var(--line);border-radius:11px;padding:12px}.v{font-size:18px;font-weight:700;margin-top:3px;overflow-wrap:anywhere}.section{font-size:12px;color:#b7c9e5;text-transform:uppercase;letter-spacing:.08em;margin:17px 0 8px}.row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #223149}.row span:first-child{color:var(--muted)}.row strong{text-align:right}.target{background:#102b28;border-color:#285743}.target .k,.target small{color:#a9d6c4}.target .v{font-size:21px;color:#65dfa9}.warning{display:none;margin-top:12px;background:#351d27;color:#ffc2c2;border:1px solid #704047;border-radius:9px;padding:10px;font-size:13px}.note{margin-top:14px}.footer{text-align:center;color:#71829c;font-size:11px;margin:18px 0}@media(max-width:720px){.grid{grid-template-columns:1fr}.head{align-items:flex-start;flex-direction:column}.card{padding:16px}}@media(max-width:390px){.fields{grid-template-columns:1fr}}
+</style></head>
+<body><main class="wrap">
+<header class="head"><div><h1>Trading Risk Calculator</h1><p class="sub">Intraday position sizing · Risk first, quantity second.</p></div><span class="tag">Personal trading tool</span></header>
+<div class="grid">
+<section class="card"><h2>Trade inputs</h2><div class="side"><button id="long" class="active" type="button">Buy / Long</button><button id="short" type="button">Sell / Short</button></div>
+<div class="fields">
+<div class="field"><label for="capital">Total capital (₹)</label><input id="capital" type="number" min="0" value="10000"></div>
+<div class="field"><label for="reserve">Safety reserve (₹)</label><input id="reserve" type="number" min="0" value="600"></div>
+<div class="field"><label for="leverage">Leverage (×)</label><input id="leverage" type="number" min="0" step="any" value="5"></div>
+<div class="field"><label for="risk">Maximum risk per trade (₹)</label><input id="risk" type="number" min="0" step="any" value="500"></div>
+<div class="field"><label for="entry">Entry price (₹)</label><input id="entry" type="number" min="0" step="any" value="1125"></div>
+<div class="field"><label for="sl">Stop-loss price (₹)</label><input id="sl" type="number" min="0" step="any" value="1115"></div>
+</div><p class="hint">Cash-equity quantity is rounded down to whole shares. Confirm actual MIS margin in Kite before placing an order.</p><div id="warning" class="warning" role="alert"></div></section>
+<section class="card" aria-live="polite"><h2>Position size result</h2>
+<div class="hero"><div class="k">Maximum shares you can take</div><div class="big" id="qty">41</div><div class="k" id="reason">Limited by buying power</div></div>
+<div class="stats">
+<div class="stat"><div class="k">Planned stop-loss risk</div><div class="v" id="actualRisk">₹410</div></div>
+<div class="stat"><div class="k">Position value</div><div class="v" id="position">₹46,125</div></div>
+<div class="stat"><div class="k">Estimated margin used</div><div class="v" id="margin">₹9,225</div></div>
+<div class="stat"><div class="k">Capital left after margin</div><div class="v" id="left">₹775</div></div></div>
+<div class="section">Quantity limits</div>
+<div class="row"><span>Capital available for margin</span><strong id="usable">₹9,400</strong></div>
+<div class="row"><span>Buying power after leverage</span><strong id="power">₹47,000</strong></div>
+<div class="row"><span>Maximum shares by margin</span><strong id="mq">41</strong></div>
+<div class="row"><span>Maximum shares by risk</span><strong id="rq">50</strong></div>
+<div class="section">Profit targets</div><div class="targets">
+<div class="target"><div class="k">1 : 2 target</div><div class="v" id="t2">₹1,145</div><small id="p2">Gross profit: ₹820</small></div>
+<div class="target"><div class="k">1 : 3 target</div><div class="v" id="t3">₹1,155</div><small id="p3">Gross profit: ₹1,230</small></div></div>
+<p class="note">Estimates exclude brokerage, STT, exchange charges, GST, stamp duty and slippage. Actual broker margin varies by stock and market conditions. Stop-loss execution can slip.</p>
+</section></div><div class="footer">Calculations run locally in your browser. No broker login or trading data is collected.</div></main>
+<script>
+(()=>{let side='long';const ids=['capital','reserve','leverage','risk','entry','sl'];const $=id=>document.getElementById(id);const fmt=n=>'₹'+n.toLocaleString('en-IN',{maximumFractionDigits:2});const set=(id,v)=>$(id).textContent=v;
+function calc(){const x=Object.fromEntries(ids.map(id=>[id,Number($(id).value)]));const warn=$('warning');if(ids.some(id=>!$(id).value.trim())||Object.values(x).some(v=>!Number.isFinite(v))){warn.style.display='block';warn.textContent='Enter valid numbers in every field.';return}
+const {capital,reserve,leverage,risk,entry,sl}=x;if(capital<=0||entry<=0||leverage<=0||risk<=0||reserve<0||reserve>=capital||sl<=0){warn.style.display='block';warn.textContent='Capital, entry, leverage and risk must be positive. Reserve must be below capital.';return}
+const d=side==='long'?entry-sl:sl-entry;if(d<=0){warn.style.display='block';warn.textContent=side==='long'?'For a long trade, stop-loss must be below entry.':'For a short trade, stop-loss must be above entry.';return}warn.style.display='none';
+const usable=capital-reserve,power=usable*leverage,mq=Math.floor(power/entry),rq=Math.floor(risk/d),q=Math.min(mq,rq),value=q*entry,margin=value/leverage,actual=q*d,t2=entry+(side==='long'?2:-2)*d,t3=entry+(side==='long'?3:-3)*d;
+set('qty',q.toLocaleString('en-IN'));set('reason',q===0?'No share fits both limits':rq<mq?'Quantity limited by risk budget':mq<rq?'Quantity limited by assumed buying power':'Both limits give same quantity');
+set('actualRisk',fmt(actual));set('position',fmt(value));set('margin',fmt(margin));set('left',fmt(capital-margin));set('usable',fmt(usable));set('power',fmt(power));set('mq',mq.toLocaleString('en-IN'));set('rq',rq.toLocaleString('en-IN'));set('t2',fmt(t2));set('t3',fmt(t3));set('p2','Gross profit: '+fmt(q*d*2));set('p3','Gross profit: '+fmt(q*d*3));}
+$('long').onclick=()=>{side='long';$('long').classList.add('active');$('short').classList.remove('active');calc()};$('short').onclick=()=>{side='short';$('short').classList.add('active');$('long').classList.remove('active');calc()};ids.forEach(id=>$(id).addEventListener('input',calc));calc();})();
+</script></body></html>
