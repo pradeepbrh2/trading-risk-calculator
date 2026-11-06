@@ -60,3 +60,18 @@ body:not(.nav-collapsed) #nav-toggle{
 @media(max-width:380px){
   body.nav-open #nav-toggle,body:not(.nav-collapsed) #nav-toggle{left:min(290px,86vw)}
 }
+
+
+/* Consistent form-field alignment across every page.
+   Prevent CSS Grid from stretching a field's internal rows when a neighbour has helper text. */
+.field{min-width:0;align-content:start}
+.fields,.settings-grid{align-items:start}
+.fields>.field,.settings-grid>.field{align-self:start;align-content:start}
+.field>input,.field>select,.field>textarea,
+.field input,.field select,.field textarea{box-sizing:border-box;min-width:0;max-width:100%}
+input,select,textarea{box-sizing:border-box;max-width:100%}
+@media(max-width:760px){
+ .settings-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr))!important}
+ .fields{grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr))}
+ .fields>.field,.settings-grid>.field{width:100%}
+}
