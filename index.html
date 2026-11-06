@@ -780,8 +780,7 @@ function exportJournalCsv(){
  const cols=['Date','Instrument','Direction','Quantity','Entry Price','Exit Price','Gross P&L','Estimated Costs','Net P&L','Notes'];
  const quote=v=>{let x=String(v??'');if(typeof v!=='number'&&/^[=+@-]/.test(x))x="'"+x;return '"'+x.replace(/"/g,'""')+'"';};
  const lines=[cols,...journalTrades.map(t=>[t.date,t.symbol,t.side,t.qty,t.entry,t.exit,tradeGross(t),tradeEstimatedCosts(t),tradeNet(t),t.notes])].map(r=>r.map(quote).join(','));
- const blob=new Blob(['\uFEFF'+lines.join('\r
-')],{type:'text/csv;charset=utf-8;'});
+ const blob=new Blob(['\uFEFF'+lines.join('\r\n')],{type:'text/csv;charset=utf-8;'});
  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='trade-journal-'+localISODate()+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);
 }
 
