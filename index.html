@@ -443,7 +443,7 @@ const target2=entry+(inst.side==='long'?2:-2)*distance,target3=entry+(inst.side=
 return {c,entry,sl,distance,marginQty,riskQty,qty,position,margin,actualRisk,target2,target3};
 }
 function instrumentHTML(inst){
-return `<details class="card instrument" data-id="${inst.id}">
+return `<details class="card instrument" data-id="${inst.id}"${inst.open?" open":""}>`
 <summary><span class="instrument-name">${escapeHTML(inst.name||'New instrument')}</span><span class="summary-meta" data-summary>Needs input</span></summary>
 <div class="instrument-body">
 <div class="instrument-top"><div class="field"><label>INSTRUMENT NAME</label><input data-field="name" type="text" maxlength="40" placeholder="e.g. INFY, NIFTY, RELIANCE" value="${escapeAttr(inst.name)}"></div><button class="remove" type="button" data-action="remove">Remove</button></div>
@@ -866,12 +866,19 @@ $('importBackupFile').addEventListener('change',e=>{importFullBackup(e.target.fi
 ['capital','reserve','risk','leverage'].forEach(id=>$(id).addEventListener('input',refreshAll));
 $('reserveAmount').onclick=()=>setMode('reserve','amount');$('reservePercent').onclick=()=>setMode('reserve','percent');
 $('riskAmount').onclick=()=>setMode('risk','amount');$('riskPercent').onclick=()=>setMode('risk','percent');
-$('addInstrument').onclick=()=>{
+$('addInstrument').addEventListener('click',()=>{
 state.instruments.forEach(x=>x.open=false);
-state.instruments.push({id:nextId++,name:'',entry:'',sl:'',side:'long',open:false});
-persist();renderInstruments();
-const last=$('instruments').lastElementChild;last.scrollIntoView({behavior:'smooth',block:'start'});last.querySelector('[data-field="name"]').focus();
-};
+const instrument={id:nextId++,name:'',entry:'',sl:'',side:'long',open:true};
+state.instruments.push(instrument);
+persist();
+renderInstruments();
+const last=$('instruments').lastElementChild;
+if(last){
+  try{last.scrollIntoView({behavior:'smooth',block:'start'});}catch(e){last.scrollIntoView();}
+  const nameInput=last.querySelector('[data-field="name"]');
+  if(nameInput){try{nameInput.focus({preventScroll:true});}catch(e){nameInput.focus();}}
+}
+});
 $('resetAll').onclick=()=>{if(confirm('Reset all settings and remove added instruments?')){state=cloneState(defaultState);nextId=2;persist();renderSettings();renderInstruments();}};
 }
 const requestedView=new URLSearchParams(window.location.search).get('view');
