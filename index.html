@@ -388,7 +388,8 @@ const defaultState={
  settings:{capital:'10000',reserve:'600',reserveMode:'amount',risk:'500',riskMode:'amount',leverage:'5'},
  instruments:[{id:1,name:'INFY',entry:'1125',sl:'1115',side:'long',open:false}]
 };
-let state=structuredClone(defaultState), nextId=2;
+const cloneState=value=>JSON.parse(JSON.stringify(value));
+let state=cloneState(defaultState), nextId=2;
 const money=n=>'₹'+Number(n).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
 const whole=n=>Math.max(0,Math.floor(n));
 function persist(){try{localStorage.setItem(STORE,JSON.stringify(state));}catch(e){}}
@@ -871,7 +872,7 @@ state.instruments.push({id:nextId++,name:'',entry:'',sl:'',side:'long',open:fals
 persist();renderInstruments();
 const last=$('instruments').lastElementChild;last.scrollIntoView({behavior:'smooth',block:'start'});last.querySelector('[data-field="name"]').focus();
 };
-$('resetAll').onclick=()=>{if(confirm('Reset all settings and remove added instruments?')){state=structuredClone(defaultState);nextId=2;persist();renderSettings();renderInstruments();}};
+$('resetAll').onclick=()=>{if(confirm('Reset all settings and remove added instruments?')){state=cloneState(defaultState);nextId=2;persist();renderSettings();renderInstruments();}};
 }
 const requestedView=new URLSearchParams(window.location.search).get('view');
 const pathView=window.location.pathname.endsWith('/risk-dashboard.html')?'risk':window.location.pathname.endsWith('/trade-journal.html')?'journal':'calculator';
