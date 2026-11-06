@@ -432,7 +432,11 @@ if(!err&&(!Number.isFinite(entry)||entry<=0||!Number.isFinite(sl)||sl<=0))err='E
 const distance=inst.side==='long'?entry-sl:sl-entry;
 if(!err&&distance<=0)err=inst.side==='long'?'For a long trade, stop-loss must be below entry.':'For a short trade, stop-loss must be above entry.';
 if(err)return {error:err};
-const marginQty=whole(c.buyingPower/entry),grossRiskQty=whole(c.risk/distance);\n// Include the estimated round-trip costs at the stop-loss when enforcing the risk budget.\nlet lo=0,hi=grossRiskQty;\nwhile(lo<hi){const mid=Math.ceil((lo+hi)/2),plannedRisk=mid*distance+estimateTradeCharges({side:inst.side,qty:mid,entry,exit:sl}).total;if(plannedRisk<=c.risk)lo=mid;else hi=mid-1;}\nconst riskQty=lo,qty=Math.min(marginQty,riskQty);
+const marginQty=whole(c.buyingPower/entry),grossRiskQty=whole(c.risk/distance);
+// Include the estimated round-trip costs at the stop-loss when enforcing the risk budget.
+let lo=0,hi=grossRiskQty;
+while(lo<hi){const mid=Math.ceil((lo+hi)/2),plannedRisk=mid*distance+estimateTradeCharges({side:inst.side,qty:mid,entry,exit:sl}).total;if(plannedRisk<=c.risk)lo=mid;else hi=mid-1;}
+const riskQty=lo,qty=Math.min(marginQty,riskQty);
 const position=qty*entry,margin=position/c.leverage,actualRisk=qty*distance;
 const target2=entry+(inst.side==='long'?2:-2)*distance,target3=entry+(inst.side==='long'?3:-3)*distance;
 return {c,entry,sl,distance,marginQty,riskQty,qty,position,margin,actualRisk,target2,target3};
@@ -775,7 +779,8 @@ function exportJournalCsv(){
  const cols=['Date','Instrument','Direction','Quantity','Entry Price','Exit Price','Gross P&L','Estimated Costs','Net P&L','Notes'];
  const quote=v=>{let x=String(v??'');if(typeof v!=='number'&&/^[=+@-]/.test(x))x="'"+x;return '"'+x.replace(/"/g,'""')+'"';};
  const lines=[cols,...journalTrades.map(t=>[t.date,t.symbol,t.side,t.qty,t.entry,t.exit,tradeGross(t),tradeEstimatedCosts(t),tradeNet(t),t.notes])].map(r=>r.map(quote).join(','));
- const blob=new Blob(['\uFEFF'+lines.join('\r\n')],{type:'text/csv;charset=utf-8;'});
+ const blob=new Blob(['\uFEFF'+lines.join('\r
+')],{type:'text/csv;charset=utf-8;'});
  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='trade-journal-'+localISODate()+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);
 }
 
