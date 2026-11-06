@@ -831,6 +831,8 @@ function renderRiskDashboard(){
  $('guardrailStatus').textContent=messages.join(' · ');
  const addButton=$('addInstrument');
  if(addButton){addButton.disabled=sessionLocked;addButton.title=sessionLocked?'Session locked until the next calendar day':'Add an instrument setup';}
+ // Add friction across the planning workspace while locked; the journal remains editable so records can be corrected.
+ document.querySelectorAll('#panel-calculator input,#panel-calculator select,#panel-calculator .side button,#addInstrument').forEach(control=>{control.disabled=sessionLocked;});
 }
 function bindRiskDashboard(){
  $('dailyLossLimit').value=guardrails.dailyLossLimit;$('maxTradesPerDay').value=guardrails.maxTradesPerDay;$('maxConsecutiveLosses').value=guardrails.maxConsecutiveLosses;$('maxConsecutiveLosses').value=guardrails.maxConsecutiveLosses;
