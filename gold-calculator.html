@@ -19,7 +19,19 @@
 <div class="field"><label for="discount">Discount (₹)</label><input id="discount" type="number" min="0" step=".01" value="0"></div>
 <div class="field"><label for="gstMode">GST billing method</label><select id="gstMode"><option value="3">Ready-made jewellery — 3% on total</option><option value="5">Own gold / separate job-work — 5% on making only</option></select><small>Choose the method matching your actual invoice.</small></div>
 <div class="field"><label for="otherBuy">Other charges (₹, before GST)</label><input id="otherBuy" type="number" min="0" step=".01" value="0"></div>
-</div><div id="buyResults" class="results" aria-live="polite"></div><div class="actions"><button class="btn" type="button" onclick="window.print()">Print / Save quotation as PDF</button></div><p class="note">Wastage is modelled as an additional charge percentage on gold value. If your jeweller quotes wastage as extra grams, include it in the net charge basis or adjust the weight/charges to match the invoice.</p></section>
+</div><div id="buyResults" class="results" aria-live="polite"></div>
+<div class="panel" style="margin:18px 0 0;background:#0d1929">
+<h3>Compare a jeweller's quotation</h3>
+<p class="note">Enter the amounts from the shop's estimate or invoice. The comparison uses the purchase estimate above and does not assume the jeweller's tax treatment is correct.</p>
+<div class="fields">
+<div class="field"><label for="quotedMaking">Quoted making charges (₹)</label><input id="quotedMaking" type="number" min="0" step=".01" value="0"></div>
+<div class="field"><label for="quotedWastage">Quoted wastage charges (₹)</label><input id="quotedWastage" type="number" min="0" step=".01" value="0"></div>
+<div class="field"><label for="quotedGst">Quoted GST (₹)</label><input id="quotedGst" type="number" min="0" step=".01" value="0"></div>
+<div class="field"><label for="quotedTotal">Jeweller's final quoted amount (₹)</label><input id="quotedTotal" type="number" min="0" step=".01" value="0"></div>
+</div>
+<div id="quoteCompare" class="results" aria-live="polite"></div>
+<p class="small">A positive difference means the shop quote is higher than this calculator's estimate; a negative difference means it is lower. Leave fields at zero until you have a quote.</p>
+</div><div class="actions"><button class="btn" type="button" onclick="window.print()">Print / Save quotation as PDF</button></div><p class="note">Wastage is modelled as an additional charge percentage on gold value. If your jeweller quotes wastage as extra grams, include it in the net charge basis or adjust the weight/charges to match the invoice.</p></section>
 <section class="panel hidden" id="sellPanel"><h2>Old gold resale estimate</h2><div class="fields">
 <div class="field"><label for="sellRate">24K reference gold rate per gram (₹)</label><input id="sellRate" type="number" min="0" step=".01" value="11800"></div>
 <div class="field"><label for="sellPurity">Gold purity</label><select id="sellPurity"><option value="24">24K (99.9%)</option><option value="22" selected>22K (91.6%)</option><option value="18">18K (75%)</option><option value="14">14K (58.5%)</option><option value="custom">Rate already adjusted to item purity</option></select></div>
@@ -45,7 +57,11 @@ let mode='buy';function setMode(m){mode=m;['buy','sell','exchange'].forEach(x=>{
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
 function buy(){const rate=num('buyRate'),w=num('buyWeight'),gold=rate*w,type=$('makingType').value,mv=num('makingValue'),making=type==='percent'?gold*mv/100:type==='gram'?mv*w:mv,wastage=gold*num('wastage')/100,discount=num('discount'),other=num('otherBuy'),base=Math.max(0,gold+making+wastage+other-discount),gstRate=+$('gstMode').value/100,gstBase=$('gstMode').value==='3'?base:Math.max(0,making-discount),gst=gstBase*gstRate,total=base+gst;
 $('makingHint').textContent=type==='percent'?'Percentage of gold value':type==='gram'?'₹ per gram × weight':'One-time amount in ₹';
-$('buyResults').innerHTML=metric('Gold value',gold)+metric('Making charges',making)+metric('Wastage charges',wastage)+metric('Pre-GST amount',base)+metric('GST ('+(gstRate*100).toFixed(0)+'%)',gst)+metric('Estimated bill total',total,'total')}
+$('buyResults').innerHTML=metric('Gold value',gold)+metric('Making charges',making)+metric('Wastage charges',wastage)+metric('Pre-GST amount',base)+metric('GST ('+(gstRate*100).toFixed(0)+'%)',gst)+metric('Estimated bill total',total,'total');
+const qMaking=num('quotedMaking'),qWastage=num('quotedWastage'),qGst=num('quotedGst'),qTotal=num('quotedTotal');
+const qEntered=qMaking+qWastage+qGst+qTotal>0;
+const delta=qTotal-total;
+$('quoteCompare').innerHTML=qEntered?metric('Your estimate',total)+metric("Jeweller's quoted total",qTotal)+metric('Difference (quote − estimate)',delta,delta>0?'total':'')+metric('Quoted making + wastage',qMaking+qWastage)+metric('Quoted GST',qGst):'<p class="note">Enter the jeweller\'s quoted amounts to see the comparison.</p>';}
 function sell(){const rate=num('sellRate'),gross=num('sellWeight'),stones=num('stoneWeight'),net=Math.max(0,gross-stones),purity=$('sellPurity').value==='custom'?1:+$('sellPurity').value/24,pureEq=net*purity,market=pureEq*rate,deduction=market*num('purityDeduct')/100,other=num('otherDeduct'),payout=Math.max(0,market-deduction-other),cost=num('originalCost');
 $('sellResults').innerHTML=metric('Net gold weight',net)+metric('Fine-gold equivalent (approx.)',pureEq)+metric('Value before deductions',market)+metric('Purity / melting deduction',deduction)+metric('Other deductions',other)+metric('Estimated payout',payout,'total')+(cost>0?metric('Gain / loss vs original cost',payout-cost):'')}
 function exchange(){const gold=num('exNewRate')*num('exNewWeight'),making=gold*num('exMaking')/100,wastage=gold*num('exWastage')/100,discount=num('exDiscount'),taxable=Math.max(0,gold+making+wastage-discount),gst=taxable*.03,total=taxable+gst,credit=num('exOldValue'),balance=total-credit;
