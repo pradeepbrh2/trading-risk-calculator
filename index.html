@@ -443,7 +443,7 @@ const target2=entry+(inst.side==='long'?2:-2)*distance,target3=entry+(inst.side=
 return {c,entry,sl,distance,marginQty,riskQty,qty,position,margin,actualRisk,target2,target3};
 }
 function instrumentHTML(inst){
-return `<details class="card instrument" data-id="${inst.id}"${inst.open?" open":""}>`
+return `<details class="card instrument" data-id="${inst.id}"${inst.open?" open":""}>
 <summary><span class="instrument-name">${escapeHTML(inst.name||'New instrument')}</span><span class="summary-meta" data-summary>Needs input</span></summary>
 <div class="instrument-body">
 <div class="instrument-top"><div class="field"><label>INSTRUMENT NAME</label><input data-field="name" type="text" maxlength="40" placeholder="e.g. INFY, NIFTY, RELIANCE" value="${escapeAttr(inst.name)}"></div><button class="remove" type="button" data-action="remove">Remove</button></div>
