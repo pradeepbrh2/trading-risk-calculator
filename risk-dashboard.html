@@ -226,7 +226,7 @@ body[data-page-view="risk"] .header-link,body[data-page-view="journal"] .header-
 @media(max-width:430px){.journal-grid{grid-template-columns:1fr}}
 </style>
 <style>
-.risk-control-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}
+.risk-control-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;margin:14px 0}
 .risk-control-grid input{width:100%;background:#0c1627;border:1px solid #30425e;color:var(--text);border-radius:9px;padding:11px;font:inherit}
 .guardrail-status{padding:12px;border:1px solid var(--line);border-radius:10px;background:#0c1627;margin:10px 0;color:#c4d3e7;font-size:13px;line-height:1.6}
 .exposure-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:14px 0}
@@ -287,6 +287,7 @@ body[data-page-view="risk"] .header-link,body[data-page-view="journal"] .header-
  <p class="hint">Set your personal daily guardrails. These are planning reminders only; they do not connect to or restrict broker orders.</p>
  <div class="risk-control-grid">
   <div class="field"><label for="dailyLossLimit">MAXIMUM DAILY LOSS (₹)</label><input id="dailyLossLimit" type="number" min="0" step="any" value="2000"></div>
+  <div class="field"><label for="maxConsecutiveLosses">MAXIMUM CONSECUTIVE LOSSES</label><input id="maxConsecutiveLosses" type="number" min="1" step="1" value="3"><small class="hint">Lock the session after this many losing trades in a row.</small></div>
   <div class="field"><label for="maxTradesPerDay">MAXIMUM TRADES PER DAY</label><input id="maxTradesPerDay" type="number" min="1" step="1" value="1"></div>
  </div>
  <div class="exposure-grid" id="exposureMetrics"></div>
@@ -780,13 +781,30 @@ function exportJournalCsv(){
 }
 
 const GUARDRAIL_STORE='tradingRiskCalculatorGuardrailsV1';
-let guardrails={dailyLossLimit:'2000',maxTradesPerDay:'1'};
+let guardrails={dailyLossLimit:'2000',maxTradesPerDay:'1',maxConsecutiveLosses:'3',lockedDate:'',lockReason:''};
+let sessionLocked=false;
 function loadGuardrails(){try{const saved=JSON.parse(localStorage.getItem(GUARDRAIL_STORE)||'null');if(saved&&typeof saved==='object')guardrails={...guardrails,...saved};}catch(e){}}
 function saveGuardrails(){try{localStorage.setItem(GUARDRAIL_STORE,JSON.stringify(guardrails));}catch(e){}}
+function getConsecutiveLosses(trades){
+ let streak=0;
+ [...trades].sort((a,b)=>(Number(a.id)||0)-(Number(b.id)||0)).forEach(t=>{const pnl=tradeNet(t);if(pnl<0)streak++;else streak=0;});
+ return streak;
+}
 function renderRiskDashboard(){
  const dailyLimit=Math.max(0,Number(guardrails.dailyLossLimit)||0),maxTrades=Math.max(1,Math.floor(Number(guardrails.maxTradesPerDay)||1));
+ const maxLossStreak=Math.max(1,Math.floor(Number(guardrails.maxConsecutiveLosses)||3));
  const today=localISODate(),todayTrades=journalTrades.filter(t=>t.date===today),dailyPnl=todayTrades.reduce((a,t)=>a+tradeNet(t),0);
- const lossUsed=Math.max(0,-dailyPnl),remaining=Math.max(0,dailyLimit-lossUsed);
+ const lossUsed=Math.max(0,-dailyPnl),remaining=Math.max(0,dailyLimit-lossUsed),lossStreak=getConsecutiveLosses(todayTrades);
+ const dailyLossHit=dailyLimit>0&&lossUsed>=dailyLimit&&lossUsed>0;
+ const streakHit=lossStreak>=maxLossStreak;
+ // A triggered lock is latched for the rest of the local calendar day, even if a journal row is later edited.
+ if(guardrails.lockedDate!==today){guardrails.lockedDate='';guardrails.lockReason='';}
+ if(!guardrails.lockedDate&&(dailyLossHit||streakHit)){
+  guardrails.lockedDate=today;
+  guardrails.lockReason=dailyLossHit&&streakHit?'Maximum daily loss and consecutive-loss limits reached':dailyLossHit?'Maximum daily loss limit reached':'Maximum consecutive losses reached';
+  saveGuardrails();
+ }
+ sessionLocked=guardrails.lockedDate===today;
  const active=state.instruments.map(i=>({i,r:calcInstrument(i)})).filter(x=>!x.r.error&&x.r.qty>0);
  const exposure=active.reduce((a,x)=>a+x.r.position,0),margin=active.reduce((a,x)=>a+x.r.margin,0),risk=active.reduce((a,x)=>a+x.r.actualRisk+estimateTradeCharges({side:x.i.side,qty:x.r.qty,entry:x.r.entry,exit:x.r.sl}).total,0);
  $('exposureMetrics').innerHTML=[
@@ -795,26 +813,29 @@ function renderRiskDashboard(){
   ['Combined planned risk incl. est. costs',journalMoney(risk)],
   ['Active setups',String(active.length)]
  ].map(([k,v])=>'<div class="journal-metric"><span class="k">'+k+'</span><strong>'+v+'</strong></div>').join('');
- const breached=dailyLimit>0&&lossUsed>=dailyLimit&&lossUsed>0;
  const countReached=todayTrades.length>=maxTrades;
  const messages=[
   'Today realised P&L: '+journalMoney(dailyPnl),
   'Daily loss limit: '+(dailyLimit>0?journalMoney(dailyLimit):'Not set (₹0)'),
   'Loss budget remaining: '+journalMoney(remaining),
+  'Consecutive losses: '+lossStreak+' / '+maxLossStreak,
   'Trades today: '+todayTrades.length+' / '+maxTrades
  ];
- if(breached)messages.push('Daily loss limit reached or exceeded. Consider stopping for the day.');
+ if(sessionLocked)messages.unshift('🔒 SESSION LOCKED — '+guardrails.lockReason+'. Lock resets automatically on the next calendar day.');
  else if(countReached)messages.push('Maximum daily trade count reached. Consider avoiding additional trades.');
- else messages.push('Daily guardrails are within the configured limits.');
- $('guardrailStatus').classList.toggle('guardrail-warning',breached||countReached);
+ else messages.push('Session active — stay within your configured guardrails.');
+ $('guardrailStatus').classList.toggle('guardrail-warning',sessionLocked||countReached);
+ $('guardrailStatus').classList.toggle('session-locked',sessionLocked);
  $('guardrailStatus').textContent=messages.join(' · ');
+ const addButton=$('addInstrument');
+ if(addButton){addButton.disabled=sessionLocked;addButton.title=sessionLocked?'Session locked until the next calendar day':'Add an instrument setup';}
 }
 function bindRiskDashboard(){
- $('dailyLossLimit').value=guardrails.dailyLossLimit;$('maxTradesPerDay').value=guardrails.maxTradesPerDay;
+ $('dailyLossLimit').value=guardrails.dailyLossLimit;$('maxTradesPerDay').value=guardrails.maxTradesPerDay;$('maxConsecutiveLosses').value=guardrails.maxConsecutiveLosses;$('maxConsecutiveLosses').value=guardrails.maxConsecutiveLosses;
  $('dailyLossLimit').addEventListener('input',()=>{guardrails.dailyLossLimit=String(Math.max(0,Number($('dailyLossLimit').value)||0));saveGuardrails();renderRiskDashboard();});
  $('maxTradesPerDay').addEventListener('input',()=>{guardrails.maxTradesPerDay=String(Math.max(1,Math.floor(Number($('maxTradesPerDay').value)||1)));saveGuardrails();renderRiskDashboard();});
+ $('maxConsecutiveLosses').addEventListener('input',()=>{guardrails.maxConsecutiveLosses=String(Math.max(1,Math.floor(Number($('maxConsecutiveLosses').value)||1)));saveGuardrails();renderRiskDashboard();});
 }
-
 function exportFullBackup(){
  settingsFromUI();
  const backup={app:'Trading Risk Calculator',schemaVersion:1,exportedAt:new Date().toISOString(),calculator:state,journal:journalTrades,charges:chargeSettings,guardrails};
@@ -837,7 +858,7 @@ function importFullBackup(file){
    if(!Array.isArray(backup.journal)||!backup.charges||typeof backup.charges!=='object'||!backup.guardrails||typeof backup.guardrails!=='object')throw new Error('Journal, charge settings or risk controls are missing.');
    const validTrades=backup.journal.every(t=>t&&typeof t.date==='string'&&typeof t.symbol==='string'&&['long','short'].includes(t.side)&&Number.isInteger(Number(t.qty))&&Number(t.qty)>0&&Number.isFinite(Number(t.entry))&&Number(t.entry)>0&&Number.isFinite(Number(t.exit))&&Number(t.exit)>0);
    const validCharges=['brokerage','stt','exchange','stamp','gst','sebi','slippage'].every(k=>backup.charges[k]!==undefined&&Number.isFinite(Number(backup.charges[k]))&&Number(backup.charges[k])>=0);
-   const validGuardrails=['dailyLossLimit','maxTradesPerDay'].every(k=>backup.guardrails[k]!==undefined&&Number.isFinite(Number(backup.guardrails[k]))&&Number(backup.guardrails[k])>=0);
+   const validGuardrails=['dailyLossLimit','maxTradesPerDay'].every(k=>backup.guardrails[k]!==undefined&&Number.isFinite(Number(backup.guardrails[k]))&&Number(backup.guardrails[k])>=0)&&((backup.guardrails.maxConsecutiveLosses===undefined)||Number.isFinite(Number(backup.guardrails.maxConsecutiveLosses))&&Number(backup.guardrails.maxConsecutiveLosses)>=1);
    if(!validTrades||!validCharges||!validGuardrails)throw new Error('Journal, charge profile or daily risk controls contain invalid values.');
    if(!confirm('Restore this backup? It will replace the calculator settings, journal, charge profile and risk controls currently stored in this browser.'))return;
    state=backup.calculator;nextId=Math.max(0,...state.instruments.map(x=>Number(x.id)||0))+1;
