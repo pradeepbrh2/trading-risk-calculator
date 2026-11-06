@@ -170,8 +170,10 @@ body{background:radial-gradient(ellipse at 78% 7%,rgba(22,91,155,.22),transparen
 
 
  
-.workspace-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:22px 0 16px;padding:8px;background:var(--panel,rgba(255,255,255,.04));border:1px solid var(--line,rgba(255,255,255,.1));border-radius:16px;position:sticky;top:10px;z-index:20;backdrop-filter:blur(14px)}
+.workspace-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:22px 0 16px;padding:8px;background:var(--panel,rgba(255,255,255,.04));border:1px solid var(--line,rgba(255,255,255,.1));border-radius:16px;position:sticky;top:10px;z-index:20;backdrop-filter:blur(14px)}
 .workspace-tab{text-decoration:none;display:flex;align-items:center;justify-content:center;gap:9px;min-height:52px;padding:10px 14px;border:1px solid transparent;border-radius:11px;background:transparent;color:var(--muted,#aab6c8);font:inherit;font-weight:700;cursor:pointer;transition:background .18s ease,border-color .18s ease,color .18s ease}
+@media(max-width:900px){.workspace-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:430px){.workspace-tabs{grid-template-columns:1fr}}
 .workspace-tab span{font-size:11px;opacity:.65;letter-spacing:.08em}
 .workspace-tab:hover{background:rgba(255,255,255,.06);color:var(--text,#fff)}
 .workspace-tab.is-active{background:linear-gradient(135deg,rgba(59,130,246,.2),rgba(16,185,129,.12));border-color:rgba(96,165,250,.42);color:var(--text,#fff);box-shadow:0 5px 20px rgba(0,0,0,.12)}
