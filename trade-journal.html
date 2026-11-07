@@ -250,8 +250,8 @@ body[data-page-view="risk"] .header-link,body[data-page-view="journal"] .header-
 .exposure-grid .journal-metric{min-width:0}
 .guardrail-warning{border-color:#8a5a29;color:#ffd49a}
 @media(max-width:700px){.exposure-grid{grid-template-columns:1fr 1fr}}
-</style><link rel="stylesheet" href="assets/site-nav.css?v=9">
-<script src="assets/site-nav.js?v=9" defer></script>
+</style><link rel="stylesheet" href="assets/site-nav.css?v=11">
+<script src="assets/site-nav.js?v=10" defer></script>
 </head>
 <body><a class="skip-link" href="#calculator">Skip to calculator</a>
 <main class="wrap">
@@ -906,9 +906,9 @@ $('resetAll').onclick=()=>{if(confirm('Reset all settings and remove added instr
 const requestedView=new URLSearchParams(window.location.search).get('view');
 const pathView=window.location.pathname.endsWith('/risk-dashboard.html')?'risk':window.location.pathname.endsWith('/trade-journal.html')?'journal':'calculator';
 const currentView=pathView!=='calculator'?pathView:(['calculator','risk','journal'].includes(requestedView)?requestedView:'calculator');
-document.body.dataset.pageView=currentView;
+document.body.dataset.pageView=currentView;const brandTitle=document.querySelector('.brand h1'),brandSub=document.querySelector('.brand .sub');if(currentView==='risk'){if(brandTitle)brandTitle.textContent='Daily Risk Dashboard';if(brandSub)brandSub.textContent='Set limits · Protect your session · Review exposure';}if(currentView==='journal'){if(brandTitle)brandTitle.textContent='Trade Journal';if(brandSub)brandSub.textContent='Record trades · Review results · Learn from data';}
 const headerLink=document.querySelector('.header-link');
-if(currentView!=='calculator'){headerLink.href='index.html';headerLink.textContent='← Open position calculator';}else{headerLink.href='#calculator';headerLink.textContent='Go to calculator ↓';}
+if(currentView!=='calculator'){headerLink.href='equity-calculator.html';headerLink.textContent='← Open position calculator';}else{headerLink.href='#calculator';headerLink.textContent='Go to calculator ↓';}
 const viewPanels={calculator:'panel-calculator',risk:'panel-risk',journal:'panel-journal'};
 Object.entries(viewPanels).forEach(([view,id])=>{$(id).hidden=view!==currentView;});
 document.querySelectorAll('[data-view-link]').forEach(link=>{

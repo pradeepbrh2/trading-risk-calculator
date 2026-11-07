@@ -235,8 +235,8 @@ body[data-page-view="risk"] .header-link,body[data-page-view="journal"] .header-
 .guardrail-status.session-locked{background:#351d27;border:1px solid #a84450;color:#ffd1d5;font-weight:700;box-shadow:0 0 0 1px #a8445033}
 #addInstrument:disabled{opacity:.45;cursor:not-allowed;filter:grayscale(.4)}
 @media(max-width:700px){.exposure-grid{grid-template-columns:1fr 1fr}}
-</style><link rel="stylesheet" href="assets/site-nav.css?v=10">
-<script src="assets/site-nav.js?v=9" defer></script>
+</style><link rel="stylesheet" href="assets/site-nav.css?v=11">
+<script src="assets/site-nav.js?v=10" defer></script>
 </head>
 <body><a class="skip-link" href="#calculator">Skip to calculator</a>
 <main class="wrap">
@@ -295,6 +295,17 @@ body[data-page-view="risk"] .header-link,body[data-page-view="journal"] .header-
  <div class="exposure-grid" id="exposureMetrics"></div>
  <div class="guardrail-status" id="guardrailStatus" role="status" aria-live="polite">Daily guardrail status will appear here.</div>
  <p class="hint">Exposure totals use each valid instrument setup currently entered in the calculator. Margin is an estimate based on your leverage input. Daily loss and trade count use completed trades in your local journal.</p>
+<section class="card" id="drawdown-simulator" aria-labelledby="drawdown-title">
+ <h2 id="drawdown-title">Losing streak simulator</h2>
+ <p class="hint">See how repeated losses compound when each trade risks a fixed percentage of your remaining account balance.</p>
+ <div class="risk-control-grid">
+  <div class="field"><label for="streakRiskPct">RISK PER TRADE (%)</label><input id="streakRiskPct" type="number" min="0.1" max="100" step="0.1" value="2"></div>
+  <div class="field"><label for="streakLossCount">CONSECUTIVE LOSSES</label><input id="streakLossCount" type="number" min="1" max="100" step="1" value="10"></div>
+ </div>
+ <div class="exposure-grid" id="streakMetrics" aria-live="polite"></div>
+ <div id="streakSummary" class="guardrail-status" role="status" aria-live="polite"></div>
+ <p class="hint">Illustrative compounding only. Excludes gaps, slippage, fees, changing risk and deposits/withdrawals.</p>
+</section>
 </section>
 
 </div>
@@ -792,6 +803,17 @@ function getConsecutiveLosses(trades){
  [...trades].sort((a,b)=>(Number(a.id)||0)-(Number(b.id)||0)).forEach(t=>{const pnl=tradeNet(t);if(pnl<0)streak++;else streak=0;});
  return streak;
 }
+function renderStreakSimulator(){
+ const capital=Math.max(0,Number($('capital').value)||0);
+ const riskPct=Number($('streakRiskPct').value),losses=Math.floor(Number($('streakLossCount').value));
+ const valid=Number.isFinite(riskPct)&&riskPct>0&&riskPct<=100&&Number.isInteger(losses)&&losses>=1&&losses<=100&&capital>0;
+ const metrics=$('streakMetrics'),summary=$('streakSummary');
+ if(!valid){metrics.innerHTML='';summary.textContent='Enter valid capital, risk (0.1–100%) and 1–100 consecutive losses.';return;}
+ const remaining=capital*Math.pow(1-riskPct/100,losses),drawdown=capital-remaining,drawdownPct=(1-Math.pow(1-riskPct/100,losses))*100;
+ const fmt=n=>'₹'+n.toLocaleString('en-IN',{maximumFractionDigits:2});
+ metrics.innerHTML=[['Starting capital',fmt(capital)],['Capital after '+losses+' losses',fmt(remaining)],['Total loss',fmt(drawdown)],['Account drawdown',drawdownPct.toFixed(2)+'%']].map(([k,v])=>'<div class="streak-metric"><span class="k">'+k+'</span><strong>'+v+'</strong></div>').join('');
+ summary.textContent='At '+riskPct+'% risk of the remaining balance per trade, '+losses+' consecutive full-risk losses would leave '+(100-drawdownPct).toFixed(2)+'% of the starting capital.';
+}
 function renderRiskDashboard(){
  const dailyLimit=Math.max(0,Number(guardrails.dailyLossLimit)||0),maxTrades=Math.max(1,Math.floor(Number(guardrails.maxTradesPerDay)||1));
  const maxLossStreak=Math.max(1,Math.floor(Number(guardrails.maxConsecutiveLosses)||3));
@@ -829,13 +851,14 @@ function renderRiskDashboard(){
  $('guardrailStatus').classList.toggle('guardrail-warning',sessionLocked||countReached);
  $('guardrailStatus').classList.toggle('session-locked',sessionLocked);
  $('guardrailStatus').textContent=messages.join(' · ');
+ renderStreakSimulator();
  const addButton=$('addInstrument');
  if(addButton){addButton.disabled=sessionLocked;addButton.title=sessionLocked?'Session locked until the next calendar day':'Add an instrument setup';}
  // Add friction across the planning workspace while locked; the journal remains editable so records can be corrected.
  document.querySelectorAll('#panel-calculator input,#panel-calculator select,#panel-calculator .side button,#addInstrument').forEach(control=>{control.disabled=sessionLocked;});
 }
 function bindRiskDashboard(){
- $('dailyLossLimit').value=guardrails.dailyLossLimit;$('maxTradesPerDay').value=guardrails.maxTradesPerDay;$('maxConsecutiveLosses').value=guardrails.maxConsecutiveLosses;$('maxConsecutiveLosses').value=guardrails.maxConsecutiveLosses;
+ $('dailyLossLimit').value=guardrails.dailyLossLimit;$('maxTradesPerDay').value=guardrails.maxTradesPerDay;$('maxConsecutiveLosses').value=guardrails.maxConsecutiveLosses;['streakRiskPct','streakLossCount'].forEach(id=>$(id).addEventListener('input',renderStreakSimulator));$('maxConsecutiveLosses').value=guardrails.maxConsecutiveLosses;
  $('dailyLossLimit').addEventListener('input',()=>{guardrails.dailyLossLimit=String(Math.max(0,Number($('dailyLossLimit').value)||0));saveGuardrails();renderRiskDashboard();});
  $('maxTradesPerDay').addEventListener('input',()=>{guardrails.maxTradesPerDay=String(Math.max(1,Math.floor(Number($('maxTradesPerDay').value)||1)));saveGuardrails();renderRiskDashboard();});
  $('maxConsecutiveLosses').addEventListener('input',()=>{guardrails.maxConsecutiveLosses=String(Math.max(1,Math.floor(Number($('maxConsecutiveLosses').value)||1)));saveGuardrails();renderRiskDashboard();});
@@ -896,9 +919,9 @@ $('resetAll').onclick=()=>{if(confirm('Reset all settings and remove added instr
 const requestedView=new URLSearchParams(window.location.search).get('view');
 const pathView=window.location.pathname.endsWith('/risk-dashboard.html')?'risk':window.location.pathname.endsWith('/trade-journal.html')?'journal':'calculator';
 const currentView=pathView!=='calculator'?pathView:(['calculator','risk','journal'].includes(requestedView)?requestedView:'calculator');
-document.body.dataset.pageView=currentView;
+document.body.dataset.pageView=currentView;const brandTitle=document.querySelector('.brand h1'),brandSub=document.querySelector('.brand .sub');if(currentView==='risk'){if(brandTitle)brandTitle.textContent='Daily Risk Dashboard';if(brandSub)brandSub.textContent='Set limits · Protect your session · Review exposure';}if(currentView==='journal'){if(brandTitle)brandTitle.textContent='Trade Journal';if(brandSub)brandSub.textContent='Record trades · Review results · Learn from data';}
 const headerLink=document.querySelector('.header-link');
-if(currentView!=='calculator'){headerLink.href='index.html';headerLink.textContent='← Open position calculator';}else{headerLink.href='#calculator';headerLink.textContent='Go to calculator ↓';}
+if(currentView!=='calculator'){headerLink.href='equity-calculator.html';headerLink.textContent='← Open position calculator';}else{headerLink.href='#calculator';headerLink.textContent='Go to calculator ↓';}
 const viewPanels={calculator:'panel-calculator',risk:'panel-risk',journal:'panel-journal'};
 Object.entries(viewPanels).forEach(([view,id])=>{$(id).hidden=view!==currentView;});
 document.querySelectorAll('[data-view-link]').forEach(link=>{

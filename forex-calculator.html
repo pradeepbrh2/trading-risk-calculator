@@ -1,0 +1,1007 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b1220">
+<title>Forex Position Calculator | Trading Toolkit</title>
+<meta name="description" content="Calculate forex lot size, pip distance and INR risk using contract size and a manually verified quote-currency conversion rate.">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<link rel="canonical" href="https://pradeepbrh2.github.io/trading-risk-calculator/forex-calculator.html">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preload" as="image" href="assets/trader-hero.svg" fetchpriority="high">
+<link rel="manifest" href="site.webmanifest">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="en_IN">
+<meta property="og:site_name" content="Position Sizing &amp; Risk Calculator">
+<meta property="og:title" content="Free Position Size Calculator India | Intraday Risk &amp; Reward">
+<meta property="og:description" content="Plan intraday share quantity, stop-loss risk, estimated margin and risk-reward targets before you place an order.">
+<meta property="og:url" content="https://pradeepbrh2.github.io/trading-risk-calculator/">
+<meta property="og:image" content="https://pradeepbrh2.github.io/trading-risk-calculator/assets/og-position-sizing-calculator.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Position sizing and risk calculator with a trader reviewing market charts">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Free Position Size Calculator India">
+<meta name="twitter:description" content="Calculate share quantity, stop-loss risk, estimated margin and reward targets.">
+<meta name="twitter:image" content="https://pradeepbrh2.github.io/trading-risk-calculator/assets/og-position-sizing-calculator.jpg">
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://pradeepbrh2.github.io/trading-risk-calculator/#website",
+      "url": "https://pradeepbrh2.github.io/trading-risk-calculator/",
+      "name": "Position Sizing & Risk Calculator",
+      "inLanguage": "en-IN"
+    },
+    {
+      "@type": "WebApplication",
+      "@id": "https://pradeepbrh2.github.io/trading-risk-calculator/#application",
+      "name": "Position Sizing & Risk Calculator",
+      "url": "https://pradeepbrh2.github.io/trading-risk-calculator/",
+      "description": "A free browser-based position sizing calculator for Indian equity and intraday setups. Estimate share quantity, stop-loss risk, position value, assumed margin and risk-reward targets.",
+      "applicationCategory": "FinanceApplication",
+      "operatingSystem": "Any",
+      "browserRequirements": "Requires a modern web browser with JavaScript enabled.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "INR"
+      },
+      "featureList": [
+        "Risk-based share quantity calculation",
+        "Margin-based quantity estimate using user-entered assumed leverage",
+        "Long and short position calculations",
+        "1:2 and 1:3 risk-reward target prices",
+        "Multiple instrument scenarios",
+        "Excel workbook export"
+      ],
+      "isAccessibleForFree": true,
+      "inLanguage": "en-IN"
+    },
+    {
+      "@type": "HowTo",
+      "@id": "https://pradeepbrh2.github.io/trading-risk-calculator/#howto",
+      "name": "How to calculate position size for intraday trading",
+      "description": "Estimate a whole-share quantity using a risk budget and assumed buying power.",
+      "inLanguage": "en-IN",
+      "step": [
+        {"@type":"HowToStep","name":"Enter capital and reserve","text":"Enter total trading capital and the safety reserve to calculate usable capital."},
+        {"@type":"HowToStep","name":"Set the risk budget and leverage","text":"Choose the maximum risk per trade and enter an assumed leverage for an indicative buying-power estimate."},
+        {"@type":"HowToStep","name":"Enter the trade setup","text":"Add the instrument, choose long or short, and enter the entry and stop-loss prices."},
+        {"@type":"HowToStep","name":"Review the calculated quantity","text":"Use the lower of the risk-based and buying-power-based whole-share quantities. Review planned risk, estimated margin and reward targets."}
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://pradeepbrh2.github.io/trading-risk-calculator/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is a position size calculator?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A position size calculator estimates how many shares or units may fit within a chosen risk limit and available buying power. It uses the entry price, stop-loss price, risk budget and assumed leverage."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How is share quantity calculated?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Risk-based quantity is the risk budget divided by the absolute difference between entry and stop-loss, rounded down to a whole share. The calculator also estimates margin-based quantity and uses the lower of the two quantities."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I calculate position size for intraday trading in India?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Enter total capital, safety reserve, maximum risk per trade, assumed leverage, instrument, entry price and stop-loss. The calculator estimates a share quantity that satisfies both the risk budget and the buying-power estimate."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How are 1:2 and 1:3 targets calculated?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The calculator measures the entry-to-stop-loss distance. For a long position it adds two or three times that distance to entry. For a short position it subtracts two or three times that distance from entry."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does the calculator show exact Zerodha or broker margin and charges?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Leverage is an assumption entered by the user. Actual intraday margin depends on the broker, instrument and current exchange or broker rules. Brokerage, taxes, other charges and slippage are not included in the estimates."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is this calculator a trading platform or does it place orders?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. It is a planning calculator only. It does not connect to a broker, access trading accounts, provide live prices or place orders. Calculations run in the browser."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does the calculator guarantee that my loss will not exceed the risk amount?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Planned risk is based on the entered stop-loss price. Gaps, slippage, liquidity and execution delays can cause a larger realised loss."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
+<style>
+
+:root{color-scheme:dark;--bg:#0b1220;--panel:#111c2e;--muted:#91a0b8;--text:#edf3ff;--line:#26364f;--blue:#4f8cff;--green:#35c98a;--red:#ff7777}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#0b1220,#101b2d);font:15px/1.5 Segoe UI,Arial,sans-serif;color:var(--text);min-height:100vh}.wrap{max-width:1000px;margin:30px auto;padding:0 18px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px}h1{font-size:25px;margin:0}.sub,.hint,.note{color:var(--muted)}.sub{margin:4px 0}.tag{border:1px solid #2d4668;border-radius:25px;padding:6px 11px;color:#b9d2ff;font-size:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:15px}.card h2{font-size:16px;margin:0 0 15px}.settings-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.field{display:flex;flex-direction:column;gap:6px;min-width:0}.field label{font-size:12px;color:var(--muted)}input{width:100%;min-width:0;background:#0c1627;border:1px solid #30425e;color:var(--text);border-radius:9px;padding:11px;font:inherit;outline:none}input:focus{border-color:var(--blue)}
+/* Consistent dark, accessible select controls (including instrument type). */
+select{width:100%;min-width:0;max-width:100%;min-height:44px;box-sizing:border-box;appearance:none;-webkit-appearance:none;color:var(--text);color-scheme:dark;background-color:#0c1627;border:1px solid #30425e;border-radius:9px;padding:10px 42px 10px 12px;font:inherit;line-height:1.35;cursor:pointer;outline:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239aabc0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center}
+select:hover{border-color:#496789}
+select:focus-visible{border-color:var(--blue);box-shadow:0 0 0 3px rgba(79,140,255,.16)}
+select option{background:#0c1627;color:#e8eef8}
+.field-head{display:flex;justify-content:space-between;align-items:center;gap:6px;min-height:36px}.field-head label{line-height:1.25}.unit-toggle{display:flex;gap:3px;background:#0b1525;border:1px solid var(--line);border-radius:8px;padding:3px}.unit-toggle button,.small-btn{border:1px solid transparent;background:transparent;color:var(--muted);border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer}.unit-toggle button.active{background:#244875;color:white;border-color:#4f8cff}.hint{font-size:11px}.calculated{font-size:12px;color:#83dcb8;min-height:18px}.instrument-list{padding:16px}.instrument-list-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.instrument-list-head h2{font-size:18px;margin:0 0 3px}.instrument{padding:0;overflow:hidden;margin:10px 0;background:#0f1a2b}.instrument>summary{list-style:none;display:flex;align-items:center;gap:10px;cursor:pointer;padding:15px 17px;background:#17253a;min-height:58px}.instrument>summary::-webkit-details-marker{display:none}.instrument>summary::before{content:"▸";color:#a8bedb;font-size:18px;transition:transform .15s}.instrument[open]>summary::before{transform:rotate(90deg)}.instrument-name{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.summary-meta{color:var(--muted);font-size:12px;margin-left:auto;white-space:nowrap}.instrument-body{padding:17px}.instrument-list{padding:12px}.instrument-list-head{align-items:flex-start}.instrument-top{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:15px}.instrument-top .field{flex:1;max-width:420px}.remove{border:1px solid #653b48;background:#351f2a;color:#ffb4bd;border-radius:8px;padding:8px 10px;cursor:pointer;font-size:12px}.side{display:flex;gap:7px;margin-bottom:15px}.side button,.add-btn,.reset-btn{border:1px solid var(--line);background:#17243a;color:var(--text);border-radius:9px;padding:9px 13px;cursor:pointer;font-weight:600}.side button{flex:1}.side button.active{background:#183b70;border-color:var(--blue)}.trade-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}.trade-fields[hidden]{display:none!important}.result{margin-top:16px;border-top:1px solid var(--line);padding-top:15px}.hero{background:#123b37;border:1px solid #286457;border-radius:12px;padding:14px;margin-bottom:12px}.hero .k{font-size:12px;color:#b6d8d0}.qty{font-size:32px;font-weight:800;color:#71e1b5}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.stat{background:#0c1627;border:1px solid var(--line);border-radius:10px;padding:10px;min-width:0}.k{font-size:11px;color:var(--muted)}.v{font-size:16px;font-weight:700;margin-top:3px;overflow-wrap:anywhere}.section{font-size:11px;color:#b7c9e5;text-transform:uppercase;letter-spacing:.08em;margin:15px 0 7px}.rows{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}.row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid #223149;font-size:13px}.row span:first-child{color:var(--muted)}.row strong{text-align:right}.targets{display:grid;grid-template-columns:1fr 1fr;gap:9px}.target{background:#102b28;border:1px solid #285743;border-radius:10px;padding:11px}.target .k,.target small{color:#a9d6c4}.target .v{font-size:20px;color:#65dfa9}.warning{display:none;margin-top:11px;background:#351d27;color:#ffc2c2;border:1px solid #704047;border-radius:9px;padding:9px;font-size:12px}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:18px 0}.add-btn{background:#1c477b;border-color:#376cb0}.reset-btn{font-size:12px;color:var(--muted)}.note{font-size:12px;margin-top:12px}.footer{text-align:center;color:#71829c;font-size:11px;margin:22px 0}
+@media(max-width:750px){.settings-grid{grid-template-columns:1fr 1fr}.stats{grid-template-columns:1fr 1fr}.wrap{margin:20px auto}}@media(max-width:430px){.settings-grid,.trade-fields{grid-template-columns:1fr}.instrument-head{padding:11px}.summary-meta{display:none}.instrument-body{padding:13px}.rows{grid-template-columns:1fr}.instrument-top{align-items:flex-start}.qty{font-size:29px}}
+
+/* Premium welcome hero and subtle motion */
+body{background:radial-gradient(ellipse at 78% 7%,rgba(22,91,155,.22),transparent 34%),radial-gradient(ellipse at 10% 30%,rgba(23,68,119,.16),transparent 38%),linear-gradient(145deg,#07101f,#0b1729 55%,#101b2d);background-attachment:fixed}
+.wrap{max-width:1180px}
+.site-header{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:4px 0 18px;border-bottom:1px solid rgba(90,140,198,.24);margin-bottom:20px;animation:fadeDown .65s ease both}
+.brand{display:flex;align-items:center;gap:13px}.brand-mark{display:grid;place-items:center;width:44px;height:44px;border-radius:13px;background:linear-gradient(145deg,#123e79,#087fbd);box-shadow:0 0 24px rgba(28,132,255,.25);font-size:29px;font-weight:800;color:#8bd5ff}.brand h1{font-size:22px;letter-spacing:-.5px}.brand .sub{font-size:12px;margin:3px 0 0}.brand .sub span{color:#35c98a}
+.header-link{color:#b7d4f7;text-decoration:none;border:1px solid rgba(81,145,220,.35);padding:9px 13px;border-radius:10px;font-size:12px}
+.welcome-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(280px,.88fr) minmax(0,1.12fr);min-height:310px;overflow:hidden;border:1px solid rgba(56,137,235,.65);border-radius:20px;margin:0 0 20px;background:linear-gradient(110deg,#0a1c33,#0b1b32 48%,#07172b);box-shadow:0 18px 48px rgba(0,0,0,.26),0 0 28px rgba(25,115,218,.1);animation:heroEnter .85s cubic-bezier(.2,.75,.25,1) both}
+.hero-art{position:relative;min-height:310px;overflow:hidden}.hero-art:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 58%,#0a1a30 100%),linear-gradient(0deg,rgba(4,12,25,.22),transparent 45%)}.hero-art img{width:100%;height:100%;min-height:310px;object-fit:cover;object-position:47% 40%;display:block;animation:artReveal 1.1s ease both}
+.hero-copy{position:relative;z-index:2;align-self:center;padding:30px 34px 30px 12px}.eyebrow{font-size:10px;letter-spacing:.16em;color:#78b8f4;font-weight:700;margin-bottom:13px;display:flex;align-items:center;gap:8px}.pulse-dot{width:7px;height:7px;border-radius:50%;background:#39d99a;box-shadow:0 0 0 5px rgba(57,217,154,.12);animation:pulse 2s infinite}
+.hero-copy h2{font-size:clamp(27px,3.4vw,42px);line-height:1.1;margin:0 0 9px;letter-spacing:-1px}.hero-copy h2 em{font-style:normal;background:linear-gradient(90deg,#51c9ff,#54e3b0);background-clip:text;color:transparent}.hero-copy h3{font-size:17px;margin:0 0 10px;color:#d7e8ff}.hero-copy p{font-size:13px;line-height:1.65;color:#aebfd7;max-width:520px;margin:0 0 18px}.wave{display:inline-block;transform-origin:75% 75%;animation:wave 2.4s ease-in-out 1}
+.hero-benefits{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;max-width:500px;margin:0 0 20px}.hero-benefits>div{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;border-right:1px solid rgba(111,151,203,.18);font-size:10px;color:#dbeaff}.hero-benefits>div:last-child{border:0}.benefit-icon{width:36px;height:36px;display:grid;place-items:center;border-radius:11px;font-size:22px;font-weight:700;background:rgba(30,110,205,.17);border:1px solid rgba(69,148,255,.45);color:#55baff}.benefit-icon.calc{color:#49e3bb;border-color:rgba(36,219,177,.5)}.benefit-icon.target{color:#c68cff;border-color:rgba(180,103,255,.5)}.benefit-icon.grow{color:#ffc45d;border-color:rgba(255,174,66,.5)}
+.hero-actions{display:flex;align-items:center;gap:15px}.hero-cta{border:0;border-radius:10px;padding:11px 20px;color:#fff;font-weight:700;font-size:13px;cursor:pointer;background:linear-gradient(100deg,#0879db,#3158df 55%,#7044d9);box-shadow:0 7px 20px rgba(34,112,238,.28);transition:transform .2s,box-shadow .2s}.hero-cta:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(34,112,238,.42)}.hero-skip{border:0;background:transparent;color:#8ea9c9;font-size:11px;cursor:pointer;padding:8px}
+.market-glow{position:absolute;z-index:-1;border-radius:50%;filter:blur(50px);opacity:.24;pointer-events:none}.glow-one{width:210px;height:160px;background:#087dd5;right:2%;top:-55px}.glow-two{width:170px;height:130px;background:#713fc4;right:28%;bottom:-80px}
+.floating-candles{position:absolute;z-index:0;right:15px;top:17px;display:flex;gap:12px;opacity:.35;pointer-events:none}.floating-candles i{display:block;position:relative;width:7px;height:23px;border-radius:2px;background:#25c98a;animation:candleFloat 3s ease-in-out infinite}.floating-candles i:before{content:"";position:absolute;width:1px;height:34px;background:inherit;left:3px;top:-6px}.floating-candles i:nth-child(2n){height:15px;background:#f06479;animation-delay:.4s}.floating-candles i:nth-child(3n){height:29px;animation-delay:.8s}
+#calculator{scroll-margin-top:18px}.card{box-shadow:0 9px 30px rgba(0,0,0,.12);backdrop-filter:blur(8px)}.welcome-hero.is-hidden{display:none}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}@keyframes heroEnter{from{opacity:0;transform:translateY(18px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}@keyframes artReveal{from{transform:scale(1.06);opacity:.65}to{transform:scale(1);opacity:1}}@keyframes pulse{0%,100%{box-shadow:0 0 0 4px rgba(57,217,154,.1)}50%{box-shadow:0 0 0 8px rgba(57,217,154,.02)}}@keyframes wave{0%,100%{transform:rotate(0)}20%{transform:rotate(18deg)}40%{transform:rotate(-8deg)}60%{transform:rotate(15deg)}80%{transform:rotate(0)}}@keyframes candleFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@media(max-width:760px){.welcome-hero{grid-template-columns:1fr}.hero-art{min-height:190px;max-height:210px}.hero-art img{min-height:210px;object-position:48% 36%}.hero-art:after{background:linear-gradient(0deg,#0a1a30 0%,transparent 48%)}.hero-copy{padding:5px 20px 22px}.site-header{align-items:flex-start}.brand h1{font-size:17px}.header-link{font-size:10px;padding:8px}.hero-benefits{max-width:none}}
+@media(max-width:430px){.brand-mark{width:36px;height:36px;font-size:24px}.brand h1{font-size:15px}.brand .sub{font-size:10px}.header-link{white-space:nowrap}.hero-copy h2{font-size:28px}.hero-copy h3{font-size:15px}.hero-benefits{gap:3px}.hero-benefits>div{font-size:9px}.hero-cta{padding:10px 15px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+
+ 
+.workspace-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:22px 0 16px;padding:8px;background:var(--panel,rgba(255,255,255,.04));border:1px solid var(--line,rgba(255,255,255,.1));border-radius:16px;position:sticky;top:10px;z-index:20;backdrop-filter:blur(14px)}
+.workspace-tab{text-decoration:none;display:flex;align-items:center;justify-content:center;gap:9px;min-height:52px;padding:10px 14px;border:1px solid transparent;border-radius:11px;background:transparent;color:var(--muted,#aab6c8);font:inherit;font-weight:700;cursor:pointer;transition:background .18s ease,border-color .18s ease,color .18s ease}
+@media(max-width:900px){.workspace-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:430px){.workspace-tabs{grid-template-columns:1fr}}
+.workspace-tab span{font-size:11px;opacity:.65;letter-spacing:.08em}
+.workspace-tab:hover{background:rgba(255,255,255,.06);color:var(--text,#fff)}
+.workspace-tab.is-active{background:linear-gradient(135deg,rgba(59,130,246,.2),rgba(16,185,129,.12));border-color:rgba(96,165,250,.42);color:var(--text,#fff);box-shadow:0 5px 20px rgba(0,0,0,.12)}
+.workspace-panel[hidden]{display:none!important}
+.workspace-panel{animation:workspace-in .22s ease both}
+@keyframes workspace-in{from{opacity:.45;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:620px){.workspace-tabs{gap:4px;padding:5px;top:5px}.workspace-tab{flex-direction:column;gap:3px;padding:8px 3px;font-size:12px;min-height:58px}.workspace-tab span{font-size:9px}}
+@media(prefers-reduced-motion:reduce){.workspace-panel{animation:none}.workspace-tab{transition:none}}
+
+body[data-page-view="risk"] #welcomeHero,body[data-page-view="risk"] .note,body[data-page-view="risk"] #quick-answer,body[data-page-view="risk"] #how-it-works,body[data-page-view="risk"] #faq,body[data-page-view="journal"] #welcomeHero,body[data-page-view="journal"] .note,body[data-page-view="journal"] #quick-answer,body[data-page-view="journal"] #how-it-works,body[data-page-view="journal"] #faq{display:none!important}
+body[data-page-view="risk"] .header-link,body[data-page-view="journal"] .header-link{font-size:13px}
+</style>
+<style>
+.seo-guide h2,.seo-faq h2{font-size:21px;line-height:1.3;margin:0 0 13px;color:#edf4ff}
+.seo-guide h3{font-size:16px;margin:22px 0 8px;color:#cfe2ff}
+.seo-guide p,.seo-faq p{font-size:14px;line-height:1.75;color:#b8c7dc;margin:8px 0}
+.seo-guide ol{padding-left:22px;color:#b8c7dc;font-size:14px;line-height:1.75}
+.seo-guide li{padding:3px 0}
+.seo-guide strong,.seo-faq strong{color:#edf4ff}
+.seo-faq details{border-top:1px solid #26364f;padding:13px 2px}
+.seo-faq details:last-child{border-bottom:1px solid #26364f}
+.seo-faq summary{cursor:pointer;color:#e5efff;font-weight:650;list-style-position:outside}
+.seo-faq summary::marker{color:#56a6ff}
+.seo-faq details p{margin:10px 0 2px}
+@media(max-width:640px){.seo-guide h2,.seo-faq h2{font-size:19px}.seo-guide p,.seo-faq p,.seo-guide ol{font-size:13px}}
+</style>
+<style>.skip-link{position:absolute;left:-9999px;top:8px;background:#fff;color:#111;padding:9px 12px;border-radius:6px;z-index:999}.skip-link:focus{left:8px}</style>
+<style>
+.seo-answer{border-color:#315b86;background:linear-gradient(135deg,rgba(19,52,86,.9),rgba(17,28,46,.98))}
+.seo-answer h2{font-size:20px;margin:0 0 10px;color:#eaf3ff}
+.seo-answer p{font-size:14px;line-height:1.75;color:#c4d3e7;margin:8px 0}
+.seo-answer strong{color:#fff}
+.seo-answer .answer-note{font-size:12px;color:#9eafc7}
+</style>
+<style>
+.journal-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:12px 0}
+.journal-grid .field label{font-size:12px;color:var(--muted)}
+.journal-grid select,.journal-grid input{width:100%;min-width:0;background:#0c1627;border:1px solid #30425e;color:var(--text);border-radius:9px;padding:11px;font:inherit}
+.journal-actions{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0}
+.journal-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:14px 0}
+.journal-metric{background:#0c1627;border:1px solid var(--line);border-radius:10px;padding:11px}
+.journal-metric strong{display:block;font-size:18px;margin-top:4px}
+.journal-table-wrap{overflow-x:auto}
+.journal-table{width:100%;border-collapse:collapse;min-width:720px;font-size:12px}
+.journal-table th,.journal-table td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+.journal-table th:first-child,.journal-table td:first-child{text-align:left}
+.journal-table th{color:#b9cce6;background:#15243a}
+.journal-table td:last-child button{background:#351f2a;color:#ffb4bd;border:1px solid #653b48;border-radius:6px;padding:4px 7px;cursor:pointer}
+.journal-empty{padding:18px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:10px}
+.pnl-positive{color:#65dfa9}.pnl-negative{color:#ff929c}
+@media(max-width:700px){.journal-grid{grid-template-columns:1fr 1fr}.journal-metrics{grid-template-columns:1fr 1fr}}
+@media(max-width:430px){.journal-grid{grid-template-columns:1fr}}
+</style>
+<style>
+.risk-control-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}
+.risk-control-grid input{width:100%;background:#0c1627;border:1px solid #30425e;color:var(--text);border-radius:9px;padding:11px;font:inherit}
+.guardrail-status{padding:12px;border:1px solid var(--line);border-radius:10px;background:#0c1627;margin:10px 0;color:#c4d3e7;font-size:13px;line-height:1.6}
+.exposure-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:14px 0}
+.exposure-grid .journal-metric{min-width:0}
+.streak-metric{background:#0c1627;border:1px solid var(--line);border-radius:10px;padding:12px;min-width:0}.streak-metric strong{display:block;font-size:19px;margin-top:4px;overflow-wrap:anywhere}.streak-metric .k{font-size:11px;color:var(--muted)}
+.guardrail-warning{border-color:#8a5a29;color:#ffd49a}
+@media(max-width:700px){.exposure-grid{grid-template-columns:1fr 1fr}}
+</style><link rel="stylesheet" href="assets/site-nav.css?v=11">
+<script src="assets/site-nav.js?v=10" defer></script>
+</head>
+<body class="tool-page"><a class="skip-link" href="#calculator">Skip to calculator</a>
+<main class="wrap">
+<header class="site-header"><div class="brand"><span class="brand-mark">↗</span><div><h1>Forex Position Calculator</h1><p class="sub">Calculate forex lot size, pip distance and INR risk using contract size and a manually verified quote-currency conversion rate.</p></div></div><a class="header-link" href="index.html">← All tools</a></header>
+
+<section class="welcome-hero" id="welcomeHero" aria-label="Welcome">
+<div class="hero-art"><img src="assets/trader-hero.svg" alt="Bull and bear market sculptures beside a laptop displaying a trading plan and market chart"></div>
+<div class="hero-copy">
+<div class="eyebrow"><span class="pulse-dot"></span> YOUR TRADING WORKSPACE · PLAN · PRACTISE · IMPROVE</div>
+<h2>Trade <em>Smarter.</em></h2>
+<h3>Plan trades. Practise skills. Build discipline.</h3>
+<p>Everything you need to plan trades, calculate risk, track performance and practise trading concepts — all in one place.</p>
+<div class="hero-benefits">
+<div><span class="benefit-icon shield">◇</span><b>Manage<br>Risk</b></div><div><span class="benefit-icon calc">▦</span><b>Plan<br>Positions</b></div><div><span class="benefit-icon target">◎</span><b>Set<br>Targets</b></div><div><span class="benefit-icon grow">↗</span><b>Stay<br>Disciplined</b></div>
+</div>
+<div class="hero-actions"><button class="hero-cta" id="getStarted" type="button">Get started <span>→</span></button><button class="hero-skip" id="skipWelcome" type="button">Skip welcome</button></div>
+</div><div class="market-glow glow-one"></div><div class="market-glow glow-two"></div>
+<div class="floating-candles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</section>
+<section class="card" id="trading-games-promo" aria-labelledby="games-promo-title" style="display:flex;align-items:center;justify-content:space-between;gap:22px;flex-wrap:wrap;margin:0 0 20px;padding:20px 22px;border-color:rgba(125,92,220,.55);background:linear-gradient(110deg,rgba(47,34,91,.72),rgba(17,28,46,.96) 70%)">
+ <div style="display:flex;align-items:center;gap:15px;flex:1;min-width:230px">
+  <div aria-hidden="true" style="width:54px;height:54px;flex:0 0 54px;display:grid;place-items:center;border-radius:15px;background:rgba(157,117,255,.16);border:1px solid rgba(157,117,255,.45);font-size:29px">🎮</div>
+  <div><div style="font-size:10px;letter-spacing:.14em;font-weight:800;color:#c4a8ff;margin-bottom:4px">LEARN · PRACTISE · IMPROVE</div>
+   <h2 id="games-promo-title" style="font-size:19px;margin:0 0 4px;color:#f0eaff">Trading can be practised like a game.</h2>
+   <p style="margin:0;color:#b8c7dc;font-size:13px;line-height:1.55">Explore 23 interactive trading games — test chart reading, risk management, trade planning and trading psychology. No real money involved.</p>
+  </div>
+ </div>
+ <a href="trading-practice-lab.html" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;text-decoration:none;border:1px solid #8c6be8;border-radius:10px;padding:11px 17px;background:linear-gradient(100deg,#6943c6,#365fce);color:#fff;font-weight:750;font-size:13px;box-shadow:0 7px 20px rgba(90,66,190,.22)">Explore Trading Games <span aria-hidden="true">→</span></a>
+</section>
+<nav class="workspace-tabs" aria-label="Trading tools">
+  <a class="workspace-tab" data-view-link="calculator" href="index.html"><span>01</span> Position Calculator</a>
+  <a class="workspace-tab" data-view-link="risk" href="risk-dashboard.html"><span>02</span> Risk Dashboard</a>
+  <a class="workspace-tab" data-view-link="journal" href="trade-journal.html"><span>03</span> Trade Journal</a>
+  <a class="workspace-tab" href="trading-practice-lab.html"><span>04</span> Trading Games</a>
+</nav>
+<div class="workspace-panel" id="panel-calculator">
+<section class="card" id="calculator">
+<h2>Account-wide settings</h2>
+<div class="settings-grid">
+<div class="field"><div class="field-head"><label for="capital">Total trading capital (₹)</label></div><input id="capital" type="number" min="0" step="any" value="10000"></div>
+<div class="field">
+<div class="field-head"><label id="reserveLabel" for="reserve">Safety reserve</label><div class="unit-toggle"><button id="reserveAmount" class="active" type="button">₹</button><button id="reservePercent" type="button">%</button></div></div>
+<input id="reserve" type="number" min="0" step="any" value="600"><div class="calculated" id="reserveCalculated">Reserve: ₹600.00</div>
+</div>
+<div class="field">
+<div class="field-head"><label id="riskLabel" for="risk">Maximum risk per trade</label><div class="unit-toggle"><button id="riskAmount" class="active" type="button">₹</button><button id="riskPercent" type="button">%</button></div></div>
+<input id="risk" type="number" min="0" step="any" value="500"><div class="calculated" id="riskCalculated">Risk per trade: ₹500.00</div>
+</div>
+<div class="field"><label for="leverage">Assumed intraday leverage (×)</label><input id="leverage" type="number" min="0" step="any" value="5"></div>
+</div>
+<p class="hint">Risk and reserve settings apply to every setup on this calculator.</p>
+</section>
+
+<section class="card" id="drawdown-simulator" aria-labelledby="drawdown-title">
+ <h2 id="drawdown-title">Losing Streak Simulator</h2>
+ <p class="hint">See how repeated losses compound when you risk a fixed percentage of your remaining account balance on every trade.</p>
+ <div class="risk-control-grid">
+  <div class="field"><label for="streakRiskPct">RISK PER TRADE (%)</label><input id="streakRiskPct" type="number" min="0.1" max="100" step="0.1" value="2"></div>
+  <div class="field"><label for="streakLossCount">CONSECUTIVE LOSSES</label><input id="streakLossCount" type="number" min="1" max="100" step="1" value="10"></div>
+ </div>
+ <div class="exposure-grid" id="streakMetrics" aria-live="polite"></div>
+ <div id="streakSummary" class="guardrail-status" role="status" aria-live="polite"></div>
+ <p class="hint">Illustrative compounding only: assumes each loss equals the selected percentage of the current balance. It excludes gaps, slippage, fees, changing risk and deposits/withdrawals.</p>
+</section>
+
+<section class="card instrument-list"><div class="instrument-list-head"><div><h2>Instrument</h2><div class="hint" id="count">1 instrument</div></div><button class="add-btn" id="addInstrument" type="button">＋ Add instrument</button></div><div id="instruments"></div></section>
+<p class="hint" style="margin:0 0 14px">Choose the correct instrument mode before sizing. Equity mode uses whole shares; index-derivative mode uses your manually entered current units-per-lot multiplier; Forex mode uses pip size, base units per lot and a manually entered quote-currency-to-INR rate. FX spreads, commissions, swaps and other broker costs are not included. Verify contract specifications and conversion rates with your broker; incorrect inputs produce incorrect risk estimates.</p>
+<div class="toolbar"><span class="hint">Your settings and instrument calculations are saved in this browser.</span><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="add-btn" id="exportExcel" type="button">↓ Download Excel (.xlsx)</button><button class="reset-btn" id="resetAll" type="button">Reset all</button></div></div>
+</div>
+<div class="workspace-panel" id="panel-risk">
+<section class="card" id="risk-dashboard" aria-labelledby="risk-dashboard-title">
+ <h2 id="risk-dashboard-title">Daily Risk Controls &amp; Portfolio Exposure</h2>
+ <p class="hint">Set your personal daily guardrails. These are planning reminders only; they do not connect to or restrict broker orders.</p>
+ <div class="risk-control-grid">
+  <div class="field"><label for="dailyLossLimit">MAXIMUM DAILY LOSS (₹)</label><input id="dailyLossLimit" type="number" min="0" step="any" value="2000"></div>
+  <div class="field"><label for="maxTradesPerDay">MAXIMUM TRADES PER DAY</label><input id="maxTradesPerDay" type="number" min="1" step="1" value="1"></div>
+ </div>
+ <div class="exposure-grid" id="exposureMetrics"></div>
+ <div class="guardrail-status" id="guardrailStatus" role="status" aria-live="polite">Daily guardrail status will appear here.</div>
+ <p class="hint">Exposure totals use each valid instrument setup currently entered in the calculator. Margin is an estimate based on your leverage input. Daily loss and trade count use completed trades in your local journal.</p>
+</section>
+
+</div>
+<div class="workspace-panel" id="panel-journal">
+<section class="card" id="trade-journal" aria-labelledby="journal-title">
+  <h2 id="journal-title">Trade Journal &amp; Realised P&amp;L</h2>
+  <p class="hint">Record completed trades manually. Results are stored in this browser only.</p>
+  <div class="journal-grid">
+    <div class="field"><label for="journalDate">TRADE DATE</label><input id="journalDate" type="date"></div>
+    <div class="field"><label for="journalSymbol">INSTRUMENT</label><input id="journalSymbol" maxlength="40" placeholder="e.g. INFY"></div>
+    <div class="field"><label for="journalSide">DIRECTION</label><select id="journalSide"><option value="long">Buy / Long</option><option value="short">Sell / Short</option></select></div>
+    <div class="field"><label for="journalQty">QUANTITY</label><input id="journalQty" type="number" min="1" step="1" placeholder="Shares / units"></div>
+    <div class="field"><label for="journalEntry">ENTRY PRICE (₹)</label><input id="journalEntry" type="number" min="0.01" step="any" placeholder="Entry"></div>
+    <div class="field"><label for="journalExit">EXIT PRICE (₹)</label><input id="journalExit" type="number" min="0.01" step="any" placeholder="Exit"></div>
+    <div class="field" style="grid-column:span 2"><label for="journalNotes">NOTES (OPTIONAL)</label><input id="journalNotes" maxlength="180" placeholder="Setup, mistake, lesson learned..."></div>
+  </div>
+  <div class="journal-actions"><button class="add-btn" id="saveJournalTrade" type="button">＋ Save completed trade</button><button class="reset-btn" id="clearJournalForm" type="button">Clear form</button><button class="reset-btn" id="exportJournalCsv" type="button">↓ Export journal CSV</button><button class="reset-btn" id="exportBackup" type="button">↓ Full backup (JSON)</button><button class="reset-btn" id="importBackupBtn" type="button">↑ Restore backup</button><input id="importBackupFile" type="file" accept="application/json,.json" hidden></div>
+  <div class="journal-metrics" id="journalMetrics"></div>
+  <div class="journal-table-wrap" id="journalTableWrap"><div class="journal-empty">No completed trades recorded yet.</div></div>
+  <div class="charges-panel">
+    <h3>Broker charges estimator</h3>
+    <p class="hint">Enter the rates from your broker’s current tariff. All rates start at zero; enter your broker's current tariff. Estimates are not an official contract note.</p>
+    <div class="journal-grid">
+      <div class="field"><label for="chargeBrokerage">BROKERAGE PER ORDER (₹)</label><input id="chargeBrokerage" type="number" min="0" step="any" value="0"></div>
+      <div class="field"><label for="chargeStt">STT ON SELL TURNOVER (%)</label><input id="chargeStt" type="number" min="0" step="any" value="0"></div>
+      <div class="field"><label for="chargeExchange">EXCHANGE CHARGE (%)</label><input id="chargeExchange" type="number" min="0" step="any" value="0"></div>
+      <div class="field"><label for="chargeStamp">STAMP DUTY ON BUY TURNOVER (%)</label><input id="chargeStamp" type="number" min="0" step="any" value="0"></div>
+      <div class="field"><label for="chargeGst">GST ON BROKERAGE + EXCHANGE + SEBI (%)</label><input id="chargeGst" type="number" min="0" step="any" value="0"></div>
+      <div class="field"><label for="chargeSebi">SEBI FEE (₹ PER CRORE)</label><input id="chargeSebi" type="number" min="0" step="any" value="0"></div>
+      <div class="field"><label for="chargeSlippage">SLIPPAGE PER UNIT PER SIDE (₹)</label><input id="chargeSlippage" type="number" min="0" step="any" value="0"></div>
+    </div>
+    <p class="hint">Round-trip model: 2 brokerage orders; STT on sell-side turnover; stamp duty on buy-side turnover; exchange and SEBI fees on total turnover; GST on brokerage, exchange and SEBI fees.</p>
+  </div>
+  <div class="journal-metrics" id="journalAnalytics"></div>
+  <p class="hint">Gross P&amp;L = (Exit − Entry) × Quantity for long trades, reversed for short trades. Net P&amp;L deducts estimated broker charges and two-sided slippage. Actual charges may vary by segment, instrument, order type and broker.</p>
+</section>
+
+</div>
+
+<div class="note">Position sizing is an estimate. Actual MIS margin varies by stock and broker. Calculations use your configurable estimated broker costs and slippage settings; actual costs and stop-loss execution can differ. Stop-loss execution can be worse than the planned price.</div>
+
+
+<section class="card seo-answer" id="quick-answer" aria-labelledby="quick-answer-title">
+  <h2 id="quick-answer-title">Quick answer: How much quantity should you trade?</h2>
+  <p><strong>Your position quantity should be the smaller of your risk-based quantity and your buying-power-based quantity.</strong> This calculator applies both limits so the planned stop-loss risk stays within your selected budget while the position also fits your assumed buying power.</p>
+  <p><strong>Formula:</strong> Risk-based quantity = maximum risk per trade ÷ absolute (entry price − stop-loss price). Buying-power quantity = (capital − safety reserve) × assumed leverage ÷ entry price. Round both down to whole units, then use the lower quantity.</p>
+  <p><strong>Example:</strong> With ₹10,000 capital, ₹1,000 safety reserve, ₹500 maximum risk, 5× assumed leverage, ₹100 entry and ₹95 stop-loss, risk per share is ₹5. Risk-based quantity is 100 shares; buying-power quantity is 450 shares. The calculator therefore returns 100 shares, with ₹500 planned stop-loss risk before charges and slippage.</p>
+  <p class="answer-note">This is an educational estimate, not a recommendation to buy or sell. Actual margin, execution price and total loss can differ.</p>
+</section>
+
+<section class="card seo-guide" id="how-it-works" aria-labelledby="how-title">
+  <h2 id="how-title">Free Position Size Calculator for Intraday Trading in India</h2>
+  <p>Use this free position sizing calculator to estimate how many shares or units you can consider for an intraday setup based on your capital, safety reserve, entry price, stop-loss and maximum risk per trade. It is designed for planning Indian equity-market scenarios, including long and short setups.</p>
+  <p>The calculator compares a risk-based quantity with a buying-power-based quantity and uses the lower result. It also estimates position value, margin based on your assumed leverage, and potential price targets at 1:2 and 1:3 risk-to-reward ratios.</p>
+  <h3>How to use the position sizing calculator</h3>
+  <ol>
+    <li><strong>Enter total trading capital:</strong> Add the capital amount you want to use for planning.</li>
+    <li><strong>Set a safety reserve:</strong> Choose an amount in rupees or a percentage of total capital. The reserve cannot exceed total capital.</li>
+    <li><strong>Set maximum risk per trade:</strong> Enter the maximum planned loss in rupees or as a percentage, within the usable capital limit.</li>
+    <li><strong>Set assumed intraday leverage:</strong> Enter a leverage assumption for an indicative buying-power calculation. This is not a live broker margin quote.</li>
+    <li><strong>Add an instrument and direction:</strong> Enter a symbol such as INFY or WIPRO and select Buy / Long or Sell / Short.</li>
+    <li><strong>Enter entry and stop-loss prices:</strong> The stop-loss must be below entry for a long setup and above entry for a short setup.</li>
+    <li><strong>Review quantity and targets:</strong> Check the maximum quantity, planned risk, estimated margin and 1:2 or 1:3 target prices. Export the report to Excel if needed.</li>
+  </ol>
+  <h3>Position sizing formula</h3>
+  <p><strong>Risk per share</strong> = absolute value of (Entry price − Stop-loss price).</p>
+  <p><strong>Risk-based quantity</strong> = maximum risk per trade ÷ risk per share, rounded down to a whole share.</p>
+  <p><strong>Buying-power-based quantity</strong> = (total capital − safety reserve) × assumed leverage ÷ entry price, rounded down to a whole share.</p>
+  <p><strong>Maximum quantity</strong> = the lower of risk-based quantity and buying-power-based quantity. This helps keep the planned loss within the selected risk budget while also considering the entered buying-power assumption.</p>
+  <h3>How risk-to-reward targets work</h3>
+  <p>The calculator uses the distance between entry and stop-loss as the initial risk per share. For a 1:2 target, the target distance is twice that risk distance. For a 1:3 target, it is three times that distance. Long targets are above entry; short targets are below entry. Gross profit estimates do not deduct brokerage, taxes, other charges or slippage.</p>
+  <h3>Important margin and risk limitations</h3>
+  <p>This is an educational planning tool, not investment advice, a broker margin calculator or an order execution system. Actual intraday margin can vary by broker, instrument, volatility and applicable rules. Stop-loss orders may execute at a different price during gaps or fast markets. Always verify margin and charges with your broker before placing an order. All calculations are estimates and run locally in your browser.</p>
+</section>
+
+<section class="card seo-faq" id="faq" aria-labelledby="faq-title">
+  <h2 id="faq-title">Frequently Asked Questions</h2>
+  <details><summary>What is a position size calculator?</summary><p>A position size calculator estimates the number of shares or units that fit within a selected risk budget and buying-power limit. It uses your entry price, stop-loss, maximum risk and assumed leverage.</p></details>
+  <details><summary>How do I calculate share quantity for intraday trading?</summary><p>Divide your maximum risk per trade by the difference between entry and stop-loss to get risk-based quantity. Then calculate the buying-power-based quantity using usable capital and assumed leverage. The lower whole-share quantity is the maximum suggested by these inputs.</p></details>
+  <details><summary>Can I calculate both long and short positions?</summary><p>Yes. Select Buy / Long when the stop-loss is below entry, or Sell / Short when the stop-loss is above entry. The calculator adjusts the 1:2 and 1:3 target prices to match the selected direction.</p></details>
+  <details><summary>Does this show exact Zerodha intraday margin?</summary><p>No. The leverage field is an assumption. Actual margin requirements vary by broker and instrument and may change. Confirm the required margin in your broker's official tools before placing an order.</p></details>
+  <details><summary>Are brokerage and taxes included in the target profit?</summary><p>No. The displayed target profits are gross estimates before brokerage, STT, exchange charges, GST, stamp duty, other applicable charges and slippage.</p></details>
+  <details><summary>Does this calculator connect to my trading account?</summary><p>No. It does not ask for broker credentials, connect to a trading account, fetch live market prices or place orders. Your calculator settings are saved in your browser.</p></details>
+  <details><summary>Can I export the position sizing report?</summary><p>Yes. Use Download Excel to export an Excel workbook containing the account summary and instrument calculations.</p></details>
+<details><summary>Does the calculator guarantee that my loss will not exceed the risk amount?</summary><p>No. The planned risk is based on the entered stop-loss price. Gaps, slippage, liquidity and execution delays can cause a larger realised loss.</p></details>
+</section>
+<div class="footer">Free browser-based position sizing calculator · No broker login or trading data is collected · <a href="#how-it-works">How it works</a> · <a href="#faq">FAQs</a></div>
+</main>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const PAGE_MODE='forex';
+const STORE='tradingRiskCalculatorForexV1';
+const defaultState={
+ settings:{capital:'10000',reserve:'600',reserveMode:'amount',risk:'500',riskMode:'amount',leverage:'5'},
+ instruments:[{id:1,name:'EURUSD',entry:'1.1000',sl:'1.0950',side:'long',type:'forex',open:true}]
+};
+const cloneState=value=>JSON.parse(JSON.stringify(value));
+let state=cloneState(defaultState), nextId=2;
+const money=n=>'₹'+Number(n).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+const whole=n=>Math.max(0,Math.floor(n));
+function persist(){try{localStorage.setItem(STORE,JSON.stringify(state));}catch(e){}}
+function load(){try{const saved=JSON.parse(localStorage.getItem(STORE));if(saved&&saved.settings&&Array.isArray(saved.instruments)&&saved.instruments.length){state=saved;nextId=Math.max(0,...state.instruments.map(x=>Number(x.id)||0))+1;/* Percentage-based reserve and risk must stay within 0–100%. */if(state.settings.reserveMode==='percent'&&Number(state.settings.reserve)>100)state.settings.reserve='100';if(state.settings.riskMode==='percent'&&Number(state.settings.risk)>100)state.settings.risk='100';}}catch(e){}}
+function settingsFromUI(){const capital=Number($('capital').value)||0;let reserve=$('reserve').value,risk=$('risk').value;const reserveMax=state.settings.reserveMode==='percent'?100:capital;if(Number(reserve)>reserveMax)reserve=String(reserveMax);const reserveAmount=state.settings.reserveMode==='percent'?capital*Number(reserve)/100:Number(reserve);const usable=Math.max(0,capital-reserveAmount);const riskMax=state.settings.riskMode==='percent'?(capital>0?Math.min(100,usable/capital*100):0):usable;if(Number(risk)>riskMax)risk=String(riskMax);$('reserve').value=reserve;$('risk').value=risk;state.settings={capital:$('capital').value,reserve,reserveMode:state.settings.reserveMode,risk,riskMode:state.settings.riskMode,leverage:$('leverage').value};}
+function computedSettings(){
+const s=state.settings,capital=Number(s.capital),reserveInput=Number(s.reserve),riskInput=Number(s.risk),leverage=Number(s.leverage);
+const reserve=s.reserveMode==='percent'?capital*reserveInput/100:reserveInput;
+const risk=s.riskMode==='percent'?capital*riskInput/100:riskInput;
+return {capital,reserve,risk,leverage,usable:capital-reserve,buyingPower:(capital-reserve)*leverage};
+}
+function renderSettings(){
+const s=state.settings;
+$('capital').value=s.capital;$('reserve').value=s.reserve;$('risk').value=s.risk;$('leverage').value=s.leverage;
+$('reserveAmount').classList.toggle('active',s.reserveMode==='amount');$('reservePercent').classList.toggle('active',s.reserveMode==='percent');
+$('riskAmount').classList.toggle('active',s.riskMode==='amount');$('riskPercent').classList.toggle('active',s.riskMode==='percent');
+$('reserveLabel').textContent=s.reserveMode==='percent'?'Safety reserve (% of capital)':'Safety reserve (₹)';
+$('riskLabel').textContent=s.riskMode==='percent'?'Maximum risk per trade (% of capital)':'Maximum risk per trade (₹)';
+if(s.reserveMode==='percent')$('reserve').setAttribute('max','100');else $('reserve').setAttribute('max',String(Math.max(0,Number(s.capital)||0)));
+const c=computedSettings();
+const usableForRisk=Math.max(0,(Number(s.capital)||0)-c.reserve);
+if(s.riskMode==='percent')$('risk').setAttribute('max',String(Number(s.capital)>0?Math.min(100,usableForRisk/Number(s.capital)*100):0));else $('risk').setAttribute('max',String(usableForRisk));
+$('reserveCalculated').textContent='Reserve: '+money(c.reserve);
+$('riskCalculated').textContent='Risk per trade: '+money(c.risk);
+}
+function validateGlobal(c){
+if(!Number.isFinite(c.capital)||c.capital<=0)return 'Enter a valid total capital greater than zero.';
+if(!Number.isFinite(c.reserve)||c.reserve<0||c.reserve>c.capital)return 'Safety reserve cannot exceed total trading capital.';
+if(state.settings.reserveMode==='percent'&&(Number(state.settings.reserve)<0||Number(state.settings.reserve)>100))return 'Safety reserve percentage must be between 0% and 100%.';
+if(state.settings.riskMode==='percent'&&(Number(state.settings.risk)<=0||Number(state.settings.risk)>100))return 'Risk percentage must be greater than 0% and no more than 100%.';
+if(!Number.isFinite(c.risk)||c.risk<=0)return 'Maximum risk per trade must be greater than zero.';
+if(c.risk>c.usable)return 'Maximum risk per trade cannot exceed usable trading capital (capital minus safety reserve).';
+if(!Number.isFinite(c.leverage)||c.leverage<=0)return 'Enter a valid leverage greater than zero.';
+return '';
+}
+function calcInstrument(inst){
+const c=computedSettings(),entry=Number(inst.entry),sl=Number(inst.sl),type=inst.type||'equity';
+let err=validateGlobal(c);
+if(!err&&!String(inst.name||'').trim())err='Enter an instrument name.';
+if(!err&&(!Number.isFinite(entry)||entry<=0||!Number.isFinite(sl)||sl<=0))err='Enter valid entry and stop-loss prices.';
+const distance=inst.side==='long'?entry-sl:sl-entry;
+if(!err&&distance<=0)err=inst.side==='long'?'For a long trade, stop-loss must be below entry.':'For a short trade, stop-loss must be above entry.';
+let multiplier=1,pipSize=0,contractSize=1,quoteToInr=1,step=1;
+if(type==='index'){
+ multiplier=Number(inst.multiplier);
+ if(!err&&(!Number.isFinite(multiplier)||multiplier<=0||!Number.isInteger(multiplier)))err='Enter the current whole-number contract multiplier (units per lot).';
+}else if(type==='forex'){
+ pipSize=Number(inst.pipSize);contractSize=Number(inst.contractSize);quoteToInr=Number(inst.quoteToInr);step=0.01;
+ if(!err&&(!Number.isFinite(pipSize)||pipSize<=0))err='Enter a valid pip size (for example 0.0001 or 0.01).';
+ if(!err&&(!Number.isFinite(contractSize)||contractSize<=0))err='Enter a valid base-currency contract size per lot.';
+ if(!err&&(!Number.isFinite(quoteToInr)||quoteToInr<=0))err='Enter the current quote-currency-to-INR conversion rate.';
+}
+if(err)return {error:err};
+const unitMultiplier=type==='equity'?1:type==='index'?multiplier:contractSize;
+const fx=type==='forex'?quoteToInr:1;
+const pipDistance=type==='forex'?distance/pipSize:0;
+const riskPerLot=distance*unitMultiplier*fx;
+const marginPerLot=entry*unitMultiplier*fx/c.leverage;
+const marginQty=Math.floor((c.usable/marginPerLot)/step+1e-9)*step;
+const grossRiskQty=Math.floor((c.risk/riskPerLot)/step+1e-9)*step;
+const qtyStep=step;
+let riskQty=grossRiskQty;
+if(type!=='forex'){
+ while(riskQty>0){
+  const charges=estimateTradeCharges({side:inst.side,qty:riskQty*unitMultiplier,entry,exit:sl}).total;
+  if(riskQty*riskPerLot+charges<=c.risk)break;
+  riskQty=Math.max(0,Number((riskQty-qtyStep).toFixed(8)));
+ }
+}
+const qty=Math.max(0,Math.min(marginQty,riskQty));
+const units=qty*unitMultiplier;
+const position=entry*units*fx,margin=position/c.leverage,actualRisk=distance*units*fx;
+const target2=entry+(inst.side==='long'?2:-2)*distance,target3=entry+(inst.side==='long'?3:-3)*distance;
+return {c,entry,sl,distance,marginQty,riskQty,qty,units,unitMultiplier,position,margin,actualRisk,target2,target3,type,fx,pipSize,pipDistance,qtyStep,contractSize};
+}
+function instrumentHTML(inst){
+return `<details class="card instrument" data-id="${inst.id}"${inst.open?" open":""}>
+<summary><span class="instrument-name">${escapeHTML(inst.name||'New instrument')}</span><span class="summary-meta" data-summary>Needs input</span></summary>
+<div class="instrument-body">
+<div class="instrument-top"><div class="field"><label>INSTRUMENT NAME</label><input data-field="name" type="text" maxlength="40" placeholder="e.g. INFY, NIFTY, RELIANCE" value="${escapeAttr(inst.name)}"></div><button class="remove" type="button" data-action="remove">Remove</button></div>
+<div class="instrument-type-label"><span>INSTRUMENT</span><strong>Forex · pip and currency conversion</strong></div>
+<div class="trade-fields" data-contract-fields ${inst.type==='index'?'':'hidden'}>
+<div class="field"><label>CONTRACT MULTIPLIER (UNITS / LOT)</label><input data-field="multiplier" type="number" min="1" step="1" value="${escapeAttr(inst.multiplier||'1')}"><small class="hint">Enter the current exchange/broker contract quantity for one lot.</small></div>
+</div>
+<div class="trade-fields" data-forex-fields ${inst.type==='forex'?'':'hidden'}>
+<div class="field"><label>PIP SIZE</label><input data-field="pipSize" type="number" min="0.00000001" step="any" placeholder="e.g. 0.0001 or 0.01" value="${escapeAttr(inst.pipSize||'')}"><small class="hint">Commonly 0.0001; JPY pairs commonly 0.01. Confirm your broker's convention.</small></div>
+<div class="field"><label>CONTRACT SIZE (BASE UNITS / LOT)</label><input data-field="contractSize" type="number" min="1" step="1" placeholder="e.g. 100000" value="${escapeAttr(inst.contractSize||'')}"></div>
+<div class="field"><label>QUOTE CURRENCY → INR RATE</label><input data-field="quoteToInr" type="number" min="0.00000001" step="any" placeholder="e.g. 83.00" value="${escapeAttr(inst.quoteToInr||'')}"><small class="hint">Manual conversion: 1 unit of the pair's quote currency in INR. Example: USD/JPY needs JPY→INR, not USD→INR.</small></div><small class="hint">Forex charges, spread, swaps and commissions are not included. Confirm the pip size, contract size and conversion rate with your broker.</small>
+</div>
+<div class="side"><button type="button" data-side="long" class="${inst.side==='long'?'active':''}">Buy / Long</button><button type="button" data-side="short" class="${inst.side==='short'?'active':''}">Sell / Short</button></div>
+<div class="trade-fields">
+<div class="field"><label data-entry-label>ENTRY PRICE (₹)</label><input data-field="entry" type="number" min="0" step="any" placeholder="Entry price" value="${escapeAttr(inst.entry)}"></div>
+<div class="field"><label data-sl-label>STOP-LOSS PRICE (₹)</label><input data-field="sl" type="number" min="0" step="any" placeholder="Stop-loss" value="${escapeAttr(inst.sl)}"></div>
+</div>
+<div class="warning" data-warning role="alert"></div>
+<div class="result">
+<div class="hero"><div class="k">MAXIMUM POSITION SIZE</div><div class="qty" data-out="qty">—</div><div class="k" data-out="reason">Enter valid trade details</div></div>
+<div class="stats">
+<div class="stat"><div class="k">Estimated stop-loss loss incl. charges</div><div class="v" data-out="actualRisk">—</div></div>
+<div class="stat"><div class="k">Position value</div><div class="v" data-out="position">—</div></div>
+<div class="stat"><div class="k">Estimated margin used</div><div class="v" data-out="margin">—</div></div>
+<div class="stat"><div class="k">Capital left after margin</div><div class="v" data-out="left">—</div></div>
+</div>
+<details class="result-details"><summary>Calculation breakdown · targets · limits</summary><div class="section">Quantity limits</div>
+<div class="rows">
+<div class="row"><span>Available margin capital</span><strong data-out="usable">—</strong></div>
+<div class="row"><span>Buying power</span><strong data-out="power">—</strong></div>
+<div class="row"><span>Maximum quantity by margin</span><strong data-out="marginQty">—</strong></div>
+<div class="row"><span>Maximum quantity by risk</span><strong data-out="riskQty">—</strong></div>
+<div class="row" data-pip-value-row ${inst.type==='forex'?'':'hidden'}><span>Forex pip value per lot (INR)</span><strong data-out="pipValue">—</strong></div>
+</div>
+<div class="section">Break-even after estimated costs</div><div class="rows"><div class="row"><span>Approximate break-even exit price</span><strong data-out="breakeven">—</strong></div></div>
+<div class="section">Profit targets</div><div class="targets">
+<div class="target"><div class="k">1 : 2 TARGET</div><div class="v" data-out="target2">—</div><small data-out="profit2"></small></div>
+<div class="target"><div class="k">1 : 3 TARGET</div><div class="v" data-out="target3">—</div><small data-out="profit3"></small></div>
+</div>
+</details></div></div></details>`;
+}
+function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function escapeAttr(s){return escapeHTML(s);}
+function updateOne(card,inst){
+const r=calcInstrument(inst),warning=card.querySelector('[data-warning]');
+if(r.error){warning.style.display='block';warning.textContent=r.error;card.querySelectorAll('[data-out]').forEach(x=>x.textContent='—');card.querySelector('[data-pip-value-row]').hidden=true;card.querySelector('[data-summary]').textContent='Needs input';return;}
+warning.style.display='none';
+const put=(key,value)=>{const node=card.querySelector(`[data-out="${key}"]`);if(node)node.textContent=value;};
+card.querySelector('[data-entry-label]').textContent=r.type==='forex'?'ENTRY PRICE (PAIR QUOTE)':'ENTRY PRICE (₹)';
+card.querySelector('[data-sl-label]').textContent=r.type==='forex'?'STOP-LOSS PRICE (PAIR QUOTE)':'STOP-LOSS PRICE (₹)';
+const qtyLabel=r.type==='equity'?r.qty.toLocaleString('en-IN'):(r.type==='index'?r.qty.toLocaleString('en-IN')+' lots ('+r.units.toLocaleString('en-IN')+' units)':r.qty.toFixed(2)+' lots ('+r.units.toLocaleString('en-IN')+' units)');
+put('qty',qtyLabel);put('reason',r.qty===0?'No lot/unit fits both limits':r.riskQty<r.marginQty?'Quantity limited by risk budget':r.marginQty<r.riskQty?'Quantity limited by available margin':'Both limits give the same quantity');
+const chargeUnits=r.type==='forex'?0:r.units;
+const stopCharges=r.qty&&chargeUnits?estimateTradeCharges({side:inst.side,qty:chargeUnits,entry:r.entry,exit:r.sl}).total:0;
+const target2Charges=r.qty&&chargeUnits?estimateTradeCharges({side:inst.side,qty:chargeUnits,entry:r.entry,exit:r.target2}).total:0;
+const target3Charges=r.qty&&chargeUnits?estimateTradeCharges({side:inst.side,qty:chargeUnits,entry:r.entry,exit:r.target3}).total:0;
+const priceFmt=n=>r.type==='forex'?Number(n).toFixed(5):money(n);
+put('actualRisk',money(r.actualRisk+stopCharges));put('position',money(r.position));put('margin',money(r.margin));put('left',money(r.c.capital-r.margin));
+put('usable',money(r.c.usable));put('power',money(r.c.buyingPower));put('marginQty',r.marginQty.toLocaleString('en-IN')+(r.type==='equity'?' units':' lots'));put('riskQty',r.riskQty.toLocaleString('en-IN')+(r.type==='equity'?' units':' lots'));
+put('target2',priceFmt(r.target2));put('target3',priceFmt(r.target3));
+const pipRow=card.querySelector('[data-pip-value-row]');if(pipRow)pipRow.hidden=r.type!=='forex';
+if(r.type==='forex')put('pipValue',money(r.pipSize*r.contractSize*r.fx));
+put('breakeven',r.qty&&r.type!=='forex'?money(calculateBreakEven(inst.side,r.units,r.entry)):'Not estimated for FX');
+put('profit2',(r.type==='forex'?'Gross, before FX costs: ':'Net after est. charges: ')+money(r.actualRisk*2-target2Charges)+' · charges '+money(target2Charges));
+put('profit3',(r.type==='forex'?'Gross, before FX costs: ':'Net after est. charges: ')+money(r.actualRisk*3-target3Charges)+' · charges '+money(target3Charges));
+if(r.type==='forex')put('reason',r.pipDistance.toFixed(1)+' pips to stop · manual quote→INR conversion');
+card.querySelector('[data-summary]').textContent=qtyLabel+' · '+money(r.actualRisk)+' risk';
+}
+function renderInstruments(){
+state.instruments.forEach(inst=>inst.type=PAGE_MODE);$('instruments').innerHTML=state.instruments.map(instrumentHTML).join('');
+$('count').textContent=state.instruments.length+' instrument'+(state.instruments.length===1?'':'s');
+$('instruments').querySelectorAll('.instrument').forEach(card=>{
+const id=Number(card.dataset.id),inst=state.instruments.find(x=>x.id===id);
+card.addEventListener('toggle',()=>{inst.open=card.open;persist();},{capture:true});
+card.querySelectorAll('[data-field]').forEach(input=>{
+ const update=()=>{
+  inst[input.dataset.field]=input.value;
+  if(input.dataset.field==='name')card.querySelector('.instrument-name').textContent=input.value||'New instrument';
+  if(input.dataset.field==='type'){
+   card.querySelector('[data-contract-fields]').hidden=input.value!=='index';
+   card.querySelector('[data-forex-fields]').hidden=input.value!=='forex';
+  }
+  updateOne(card,inst);persist();
+ };
+ input.addEventListener('input',update);input.addEventListener('change',update);
+});
+card.querySelectorAll('[data-side]').forEach(btn=>btn.addEventListener('click',()=>{
+inst.side=btn.dataset.side;card.querySelectorAll('[data-side]').forEach(b=>b.classList.toggle('active',b===btn));updateOne(card,inst);persist();
+}));
+card.querySelector('[data-action="remove"]').addEventListener('click',()=>{
+if(state.instruments.length===1){alert('Keep at least one instrument calculation.');return;}
+if(confirm('Remove '+(inst.name||'this instrument')+' calculation?')){state.instruments=state.instruments.filter(x=>x.id!==id);persist();renderInstruments();}
+});
+updateOne(card,inst);
+});
+if(typeof renderRiskDashboard==='function')renderRiskDashboard();
+}
+function refreshAll(){settingsFromUI();renderSettings();document.querySelectorAll('.instrument').forEach(card=>{const inst=state.instruments.find(x=>x.id===Number(card.dataset.id));if(inst)updateOne(card,inst);});persist();if(typeof renderRiskDashboard==='function')renderRiskDashboard();if(typeof renderStreakSimulator==='function')renderStreakSimulator();}
+function renderStreakSimulator(){
+ const capital=Math.max(0,Number($('capital').value)||0);
+ const riskPct=Number($('streakRiskPct').value),losses=Math.floor(Number($('streakLossCount').value));
+ const valid=Number.isFinite(riskPct)&&riskPct>0&&riskPct<=100&&Number.isInteger(losses)&&losses>=1&&losses<=100&&capital>0;
+ const metrics=$('streakMetrics'),summary=$('streakSummary');
+ if(!valid){metrics.innerHTML='';summary.textContent='Enter capital above zero, risk between 0.1% and 100%, and 1–100 consecutive losses.';return;}
+ const remaining=capital*Math.pow(1-riskPct/100,losses),drawdown=capital-remaining,drawdownPct=(1-Math.pow(1-riskPct/100,losses))*100;
+ const fmt=n=>'₹'+n.toLocaleString('en-IN',{maximumFractionDigits:2});
+ metrics.innerHTML=[
+  ['Starting capital',fmt(capital)],
+  ['Capital after '+losses+' losses',fmt(remaining)],
+  ['Total loss',fmt(drawdown)],
+  ['Account drawdown',drawdownPct.toFixed(2)+'%']
+ ].map(([k,v])=>'<div class="streak-metric"><span class="k">'+k+'</span><strong>'+v+'</strong></div>').join('');
+ summary.textContent='At '+riskPct+'% risk of the remaining balance per trade, '+losses+' consecutive full-risk losses would leave '+(100-drawdownPct).toFixed(2)+'% of the starting capital.';
+}
+function setMode(which,mode){state.settings[which+'Mode']=mode;renderSettings();persist();refreshAll();}
+
+
+async function exportExcel(){
+  const button = $('exportExcel');
+  const originalText = button.textContent;
+  button.disabled = true;
+  button.textContent = 'Preparing Excel...';
+  try {
+    if (!window.ExcelJS) throw new Error('Excel export library could not load. Check your internet connection and try again.');
+    settingsFromUI();
+    const c = computedSettings();
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = 'Position Sizing & Risk Calculator';
+    workbook.created = new Date();
+    workbook.modified = new Date();
+
+    const ws = workbook.addWorksheet('Position Sizing', {
+      views: [{ state: 'frozen', ySplit: 11, showGridLines: false }]
+    });
+
+    ws.columns = [
+      { header: 'Instrument', key: 'instrument', width: 19 },
+      { header: 'Direction', key: 'direction', width: 15 },
+      { header: 'Entry price', key: 'entry', width: 14 },
+      { header: 'Stop-loss price', key: 'sl', width: 16 },
+      { header: 'Max quantity', key: 'qty', width: 15 },
+      { header: 'Planned risk (₹)', key: 'risk', width: 18 },
+      { header: 'Position value (₹)', key: 'position', width: 20 },
+      { header: 'Estimated margin (₹)', key: 'margin', width: 21 },
+      { header: 'Target 1:2 price', key: 'target2', width: 16 },
+      { header: 'Target 1:3 price', key: 'target3', width: 16 },
+      { header: 'Gross profit 1:2 (₹)', key: 'profit2', width: 21 },
+      { header: 'Gross profit 1:3 (₹)', key: 'profit3', width: 21 }
+    ];
+
+    ws.mergeCells('A1:L1');
+    ws.getCell('A1').value = 'POSITION SIZING & RISK CALCULATOR';
+    ws.getCell('A1').font = { name: 'Aptos Display', size: 20, bold: true, color: { argb: 'FFFFFFFF' } };
+    ws.getCell('A1').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF17365D' } };
+    ws.getCell('A1').alignment = { vertical: 'middle', horizontal: 'left' };
+    ws.getRow(1).height = 38;
+
+    ws.mergeCells('A2:L2');
+    ws.getCell('A2').value = 'Calculation summary  •  Exported ' + new Date().toLocaleString('en-IN');
+    ws.getCell('A2').font = { size: 10, italic: true, color: { argb: 'FF52657D' } };
+    ws.getCell('A2').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEAF1F8' } };
+    ws.getRow(2).height = 22;
+
+    ws.mergeCells('A4:L4');
+    ws.getCell('A4').value = 'ACCOUNT SUMMARY';
+    ws.getCell('A4').font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } };
+    ws.getCell('A4').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF244A73' } };
+    ws.getRow(4).height = 23;
+
+    const summary = [
+      ['Total capital', c.capital, 'Safety reserve', c.reserve],
+      ['Usable capital', c.usable, 'Maximum risk / trade', c.risk],
+      ['Assumed leverage', c.leverage + '×', 'Instrument count', state.instruments.length]
+    ];
+    summary.forEach((values, idx) => {
+      const row = ws.getRow(5 + idx);
+      row.values = values;
+      [1,3].forEach(col => {
+        row.getCell(col).font = { bold: true, color: { argb: 'FF40536A' } };
+        row.getCell(col).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEDF3F8' } };
+      });
+      [2,4].forEach(col => {
+        row.getCell(col).font = { bold: true, color: { argb: 'FF17365D' } };
+        row.getCell(col).numFmt = typeof row.getCell(col).value === 'number' ? '₹#,##0.00' : '@';
+      });
+      row.eachCell(cell => {
+        cell.border = { bottom: { style: 'thin', color: { argb: 'FFD7E0EA' } } };
+        cell.alignment = { vertical: 'middle', horizontal: cell.col % 2 === 0 ? 'right' : 'left' };
+      });
+      row.height = 23;
+    });
+
+    ws.mergeCells('A10:L10');
+    ws.getCell('A10').value = 'INSTRUMENT POSITION SIZING';
+    ws.getCell('A10').font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } };
+    ws.getCell('A10').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF244A73' } };
+    ws.getRow(10).height = 24;
+
+    const headerRow = ws.getRow(11);
+    headerRow.values = ws.columns.map(col => col.header);
+    headerRow.height = 34;
+    headerRow.eachCell(cell => {
+      cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 10 };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF315F8C' } };
+      cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+      cell.border = { top: { style: 'thin', color: { argb: 'FF1C3D60' } }, bottom: { style: 'thin', color: { argb: 'FF1C3D60' } } };
+    });
+
+    state.instruments.forEach(inst => {
+      const r = calcInstrument(inst);
+      let values;
+      if (r.error) {
+        values = [inst.name || 'Unnamed', inst.side === 'long' ? 'Buy / Long' : 'Sell / Short', inst.entry || '', inst.sl || '', r.error, '', '', '', '', '', '', ''];
+      } else {
+        values = [inst.name+' · '+(r.type==='index'?'Index derivative':r.type==='forex'?'Forex':'Equity'), inst.side === 'long' ? 'Buy / Long' : 'Sell / Short', r.entry, r.sl, r.type==='equity'?r.qty:(r.qty+' lots ('+r.units+' units)'), r.actualRisk, r.position, r.margin, r.target2, r.target3, r.actualRisk*2, r.actualRisk*3];
+      }
+      const row = ws.addRow(values);
+      row.height = 25;
+      row.eachCell(cell => {
+        cell.border = { bottom: { style: 'hair', color: { argb: 'FFD7E0EA' } } };
+        cell.alignment = { vertical: 'middle', horizontal: cell.col <= 2 ? 'left' : 'right' };
+        if (row.number % 2 === 0) cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF2F6FA' } };
+      });
+      if (!r.error) {
+        row.getCell(1).font = { bold: true, color: { argb: 'FF173D68' } };
+        row.getCell(5).font = { bold: true, color: { argb: 'FF176342' } };
+        row.getCell(5).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE6F4ED' } };
+        [3,4,6,7,8,9,10,11,12].forEach(col => row.getCell(col).numFmt = '₹#,##0.00');
+        row.getCell(5).numFmt = '#,##0';
+        [9,10].forEach(col => row.getCell(col).font = { bold: true, color: { argb: 'FF245A91' } });
+        [11,12].forEach(col => row.getCell(col).font = { bold: true, color: { argb: 'FF16734D' } });
+      } else {
+        row.getCell(5).font = { color: { argb: 'FFA12C37' }, italic: true };
+      }
+    });
+
+    const noteRow = ws.addRow([]);
+    const noteIndex = noteRow.number + 1;
+    ws.mergeCells(`A${noteIndex}:L${noteIndex}`);
+    ws.getCell(`A${noteIndex}`).value = 'Estimates only. Actual margin, charges, slippage and execution may differ. Gross profit excludes charges.';
+    ws.getCell(`A${noteIndex}`).font = { italic: true, color: { argb: 'FF6B7B90' }, size: 9 };
+    ws.getCell(`A${noteIndex}`).alignment = { wrapText: true };
+    ws.getRow(noteIndex).height = 22;
+    ws.autoFilter = { from: 'A11', to: `L${Math.max(11, 11 + state.instruments.length)}` };
+
+    const journalSheet = workbook.addWorksheet('Trade Journal', { views: [{ state: 'frozen', ySplit: 1, showGridLines: false }] });
+    journalSheet.columns = [
+      { header: 'Date', key: 'date', width: 14 },
+      { header: 'Instrument', key: 'symbol', width: 18 },
+      { header: 'Direction', key: 'side', width: 13 },
+      { header: 'Quantity', key: 'qty', width: 12 },
+      { header: 'Entry Price (₹)', key: 'entry', width: 17 },
+      { header: 'Exit Price (₹)', key: 'exit', width: 17 },
+      { header: 'Gross P&L (₹)', key: 'pnl', width: 18 },
+      { header: 'Estimated Costs (₹)', key: 'charges', width: 21 },
+      { header: 'Net P&L (₹)', key: 'net', width: 18 },
+      { header: 'Notes', key: 'notes', width: 36 }
+    ];
+    journalSheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    journalSheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF183451' } };
+    journalSheet.getRow(1).alignment = { vertical: 'middle' };
+    (journalTrades || []).forEach(t => {
+      const gross = tradeGross(t), charges = tradeEstimatedCosts(t), net = gross - charges;
+      const row = journalSheet.addRow({ date: t.date, symbol: t.symbol, side: t.side === 'long' ? 'Long' : 'Short', qty: t.qty, entry: t.entry, exit: t.exit, pnl: gross, charges, net, notes: t.notes });
+      row.getCell(7).font = { color: { argb: gross >= 0 ? 'FF16734D' : 'FFA12C37' } };
+      row.getCell(9).font = { color: { argb: net >= 0 ? 'FF16734D' : 'FFA12C37' } };
+    });
+    journalSheet.autoFilter = { from: 'A1', to: 'J' + Math.max(1, journalSheet.rowCount) };
+    if (!journalTrades.length) journalSheet.addRow(['No journal trades recorded yet.']);
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'position-sizing-report-' + new Date().toISOString().slice(0,10) + '.xlsx';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2500);
+  } catch (error) {
+    alert('Excel export failed: ' + error.message);
+  } finally {
+    button.disabled = false;
+    button.textContent = '↓ Download Excel (.xlsx)';
+  }
+}
+
+
+const JOURNAL_STORE='tradingRiskCalculatorJournalV1';
+const CHARGES_STORE='tradingRiskCalculatorChargesV1';
+let journalTrades=[];
+let chargeSettings={brokerage:'0',stt:'0',exchange:'0',stamp:'0',gst:'0',sebi:'0',slippage:'0'};
+function localISODate(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function loadJournal(){try{const v=JSON.parse(localStorage.getItem(JOURNAL_STORE)||'[]');if(Array.isArray(v))journalTrades=v;}catch(e){journalTrades=[];}}
+function saveJournal(){try{localStorage.setItem(JOURNAL_STORE,JSON.stringify(journalTrades));}catch(e){alert('Could not save journal data. Browser storage may be full or disabled.');}}
+function loadCharges(){try{const v=JSON.parse(localStorage.getItem(CHARGES_STORE)||'null');if(v&&typeof v==='object')chargeSettings={...chargeSettings,...v};}catch(e){}}
+function saveCharges(){try{localStorage.setItem(CHARGES_STORE,JSON.stringify(chargeSettings));}catch(e){}}
+function journalMoney(n){return '₹'+Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function journalEscape(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function estimateTradeCharges(t){
+ const buyTurnover=(t.side==='long'?t.entry:t.exit)*t.qty;
+ const sellTurnover=(t.side==='long'?t.exit:t.entry)*t.qty;
+ const totalTurnover=buyTurnover+sellTurnover;
+ const brokerage=Math.max(0,Number(chargeSettings.brokerage)||0)*2;
+ const stt=sellTurnover*Math.max(0,Number(chargeSettings.stt)||0)/100;
+ const exchange=totalTurnover*Math.max(0,Number(chargeSettings.exchange)||0)/100;
+ const stamp=buyTurnover*Math.max(0,Number(chargeSettings.stamp)||0)/100;
+ const sebi=totalTurnover*Math.max(0,Number(chargeSettings.sebi)||0)/10000000;
+ const gst=(brokerage+exchange+sebi)*Math.max(0,Number(chargeSettings.gst)||0)/100;
+ const slippage=Math.max(0,Number(chargeSettings.slippage)||0)*Math.max(0,Number(t.qty)||0)*2;
+ return {brokerage,stt,exchange,stamp,sebi,gst,slippage,total:brokerage+stt+exchange+stamp+sebi+gst+slippage};
+}
+function calculateBreakEven(side,qty,entry){
+ if(!qty||!entry)return 0;
+ let exit=entry;
+ for(let i=0;i<30;i++){
+  const cost=estimateTradeCharges({side,qty,entry,exit}).total;
+  const next=side==='long'?entry+cost/qty:Math.max(0.000001,entry-cost/qty);
+  if(Math.abs(next-exit)<0.000001){exit=next;break;}
+  exit=next;
+ }
+ return exit;
+}
+function tradeGross(t){return Number(t.pnl??((t.side==='long'?t.exit-t.entry:t.entry-t.exit)*t.qty))||0;}
+function tradeEstimatedCosts(t){return Number.isFinite(Number(t.estimatedCosts))?Number(t.estimatedCosts):estimateTradeCharges(t).total;}
+function tradeNet(t){return tradeGross(t)-tradeEstimatedCosts(t);}
+function bindCharges(){
+ const ids={chargeBrokerage:'brokerage',chargeStt:'stt',chargeExchange:'exchange',chargeStamp:'stamp',chargeGst:'gst',chargeSebi:'sebi',chargeSlippage:'slippage'};
+ Object.entries(ids).forEach(([id,key])=>{const el=$(id);el.value=chargeSettings[key];el.addEventListener('input',()=>{chargeSettings[key]=String(Math.max(0,Number(el.value)||0));saveCharges();renderJournal();renderRiskDashboard();refreshAll();});});
+}
+function renderJournal(){
+ const today=localISODate(),todays=journalTrades.filter(t=>t.date===today);
+ const total=todays.reduce((a,t)=>a+tradeNet(t),0),wins=journalTrades.filter(t=>tradeNet(t)>0).length;
+ const winRate=journalTrades.length?Math.round(wins/journalTrades.length*100):0;
+ $('journalMetrics').innerHTML=[
+  ['Today net P&L',journalMoney(total)],['Trades today',todays.length],['All-time trades',journalTrades.length],['Net win rate',winRate+'%']
+ ].map(([k,v])=>'<div class="journal-metric"><span class="k">'+k+'</span><strong>'+v+'</strong></div>').join('');
+ const ordered=[...journalTrades].sort((a,b)=>a.date.localeCompare(b.date)||a.id-b.id);
+ let cumulative=0,peak=0,maxDrawdown=0;
+ ordered.forEach(t=>{cumulative+=tradeNet(t);peak=Math.max(peak,cumulative);maxDrawdown=Math.max(maxDrawdown,peak-cumulative);});
+ const winsOnly=ordered.map(tradeNet).filter(v=>v>0),lossesOnly=ordered.map(tradeNet).filter(v=>v<0);
+ const grossWins=winsOnly.reduce((a,v)=>a+v,0),grossLosses=Math.abs(lossesOnly.reduce((a,v)=>a+v,0));
+ const factor=grossLosses? (grossWins/grossLosses).toFixed(2):(grossWins?'∞':'N/A');
+ const avgWin=winsOnly.length?grossWins/winsOnly.length:0,avgLoss=lossesOnly.length?lossesOnly.reduce((a,v)=>a+v,0)/lossesOnly.length:0;
+ const now=new Date(),monthKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+ const weekStart=new Date(now.getFullYear(),now.getMonth(),now.getDate());weekStart.setDate(weekStart.getDate()-((weekStart.getDay()+6)%7));
+ const weekKey=weekStart.getFullYear()+'-'+String(weekStart.getMonth()+1).padStart(2,'0')+'-'+String(weekStart.getDate()).padStart(2,'0');
+ const todayKey=localISODate();
+ const weekly=ordered.filter(t=>t.date>=weekKey&&t.date<=todayKey).reduce((a,t)=>a+tradeNet(t),0);
+ const monthly=ordered.filter(t=>t.date.startsWith(monthKey)).reduce((a,t)=>a+tradeNet(t),0);
+ $('journalAnalytics').innerHTML=[
+  ['This week net P&L',journalMoney(weekly)],['This month net P&L',journalMoney(monthly)],['Profit factor',factor],
+  ['Average net win',journalMoney(avgWin)],['Average net loss',journalMoney(avgLoss)],['Max closed-trade drawdown',journalMoney(maxDrawdown)]
+ ].map(([k,v])=>'<div class="journal-metric"><span class="k">'+k+'</span><strong>'+v+'</strong></div>').join('');
+ if(!journalTrades.length){$('journalTableWrap').innerHTML='<div class="journal-empty">No completed trades recorded yet.</div>';return;}
+ const rows=[...journalTrades].sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id).map(t=>{
+  const gross=tradeGross(t),charges=tradeEstimatedCosts(t),net=gross-charges;
+  return '<tr><td>'+journalEscape(t.date)+'</td><td>'+journalEscape(t.symbol)+'</td><td>'+(t.side==='long'?'Long':'Short')+'</td><td>'+t.qty+'</td><td>'+journalMoney(t.entry)+'</td><td>'+journalMoney(t.exit)+'</td><td>'+journalMoney(gross)+'</td><td>'+journalMoney(charges)+'</td><td class="'+(net>=0?'pnl-positive':'pnl-negative')+'">'+journalMoney(net)+'</td><td>'+journalEscape(t.notes)+'</td><td><button type="button" data-delete-trade="'+t.id+'" aria-label="Delete '+journalEscape(t.symbol)+' trade">Delete</button></td></tr>';
+ }).join('');
+ $('journalTableWrap').innerHTML='<table class="journal-table"><thead><tr><th>Date</th><th>Instrument</th><th>Side</th><th>Qty</th><th>Entry</th><th>Exit</th><th>Gross P&L</th><th>Est. costs</th><th>Net P&L</th><th>Notes</th><th>Action</th></tr></thead><tbody>'+rows+'</tbody></table>';
+ $('journalTableWrap').querySelectorAll('[data-delete-trade]').forEach(b=>b.addEventListener('click',()=>{const id=Number(b.dataset.deleteTrade);if(confirm('Delete this journal entry?')){journalTrades=journalTrades.filter(t=>t.id!==id);saveJournal();renderJournal();renderRiskDashboard();}}));
+}
+function clearJournalForm(){['journalSymbol','journalQty','journalEntry','journalExit','journalNotes'].forEach(id=>$(id).value='');$('journalSide').value='long';}
+function addJournalTrade(){
+ const date=$('journalDate').value,symbol=$('journalSymbol').value.trim(),qty=Number($('journalQty').value),entry=Number($('journalEntry').value),exit=Number($('journalExit').value),side=$('journalSide').value;
+ if(!date||!symbol||!Number.isInteger(qty)||qty<=0||!Number.isFinite(entry)||entry<=0||!Number.isFinite(exit)||exit<=0){alert('Enter a date, instrument, whole-number quantity, and valid entry and exit prices.');return;}
+ const pnl=(side==='long'?exit-entry:entry-exit)*qty;
+ const estimatedCosts=estimateTradeCharges({side,qty,entry,exit}).total;
+ journalTrades.push({id:Date.now(),date,symbol,side,qty,entry,exit,pnl,estimatedCosts,notes:$('journalNotes').value.trim()});
+ saveJournal();renderJournal();renderRiskDashboard();clearJournalForm();
+}
+function exportJournalCsv(){
+ if(!journalTrades.length){alert('There are no journal trades to export yet.');return;}
+ const cols=['Date','Instrument','Direction','Quantity','Entry Price','Exit Price','Gross P&L','Estimated Costs','Net P&L','Notes'];
+ const quote=v=>{let x=String(v??'');if(typeof v!=='number'&&/^[=+@-]/.test(x))x="'"+x;return '"'+x.replace(/"/g,'""')+'"';};
+ const lines=[cols,...journalTrades.map(t=>[t.date,t.symbol,t.side,t.qty,t.entry,t.exit,tradeGross(t),tradeEstimatedCosts(t),tradeNet(t),t.notes])].map(r=>r.map(quote).join(','));
+ const blob=new Blob(['\uFEFF'+lines.join('\r\n')],{type:'text/csv;charset=utf-8;'});
+ const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='trade-journal-'+localISODate()+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+
+const GUARDRAIL_STORE='tradingRiskCalculatorGuardrailsV1';
+let guardrails={dailyLossLimit:'2000',maxTradesPerDay:'1'};
+function loadGuardrails(){try{const saved=JSON.parse(localStorage.getItem(GUARDRAIL_STORE)||'null');if(saved&&typeof saved==='object')guardrails={...guardrails,...saved};}catch(e){}}
+function saveGuardrails(){try{localStorage.setItem(GUARDRAIL_STORE,JSON.stringify(guardrails));}catch(e){}}
+function renderRiskDashboard(){
+ const dailyLimit=Math.max(0,Number(guardrails.dailyLossLimit)||0),maxTrades=Math.max(1,Math.floor(Number(guardrails.maxTradesPerDay)||1));
+ const today=localISODate(),todayTrades=journalTrades.filter(t=>t.date===today),dailyPnl=todayTrades.reduce((a,t)=>a+tradeNet(t),0);
+ const lossUsed=Math.max(0,-dailyPnl),remaining=Math.max(0,dailyLimit-lossUsed);
+ const active=state.instruments.map(i=>({i,r:calcInstrument(i)})).filter(x=>!x.r.error&&x.r.qty>0);
+ const exposure=active.reduce((a,x)=>a+x.r.position,0),margin=active.reduce((a,x)=>a+x.r.margin,0),risk=active.reduce((a,x)=>a+x.r.actualRisk+estimateTradeCharges({side:x.i.side,qty:x.r.qty,entry:x.r.entry,exit:x.r.sl}).total,0);
+ $('exposureMetrics').innerHTML=[
+  ['Planned position value',journalMoney(exposure)],
+  ['Estimated margin',journalMoney(margin)],
+  ['Combined planned risk incl. est. costs',journalMoney(risk)],
+  ['Active setups',String(active.length)]
+ ].map(([k,v])=>'<div class="journal-metric"><span class="k">'+k+'</span><strong>'+v+'</strong></div>').join('');
+ const breached=dailyLimit>0&&lossUsed>=dailyLimit&&lossUsed>0;
+ const countReached=todayTrades.length>=maxTrades;
+ const messages=[
+  'Today realised P&L: '+journalMoney(dailyPnl),
+  'Daily loss limit: '+(dailyLimit>0?journalMoney(dailyLimit):'Not set (₹0)'),
+  'Loss budget remaining: '+journalMoney(remaining),
+  'Trades today: '+todayTrades.length+' / '+maxTrades
+ ];
+ if(breached)messages.push('Daily loss limit reached or exceeded. Consider stopping for the day.');
+ else if(countReached)messages.push('Maximum daily trade count reached. Consider avoiding additional trades.');
+ else messages.push('Daily guardrails are within the configured limits.');
+ $('guardrailStatus').classList.toggle('guardrail-warning',breached||countReached);
+ $('guardrailStatus').textContent=messages.join(' · ');
+}
+function bindRiskDashboard(){
+ $('dailyLossLimit').value=guardrails.dailyLossLimit;$('maxTradesPerDay').value=guardrails.maxTradesPerDay;
+ $('dailyLossLimit').addEventListener('input',()=>{guardrails.dailyLossLimit=String(Math.max(0,Number($('dailyLossLimit').value)||0));saveGuardrails();renderRiskDashboard();});
+ $('maxTradesPerDay').addEventListener('input',()=>{guardrails.maxTradesPerDay=String(Math.max(1,Math.floor(Number($('maxTradesPerDay').value)||1)));saveGuardrails();renderRiskDashboard();});
+}
+
+function exportFullBackup(){
+ settingsFromUI();
+ const backup={app:'Trading Risk Calculator',schemaVersion:1,exportedAt:new Date().toISOString(),calculator:state,journal:journalTrades,charges:chargeSettings,guardrails};
+ const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json;charset=utf-8;'});
+ const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='trading-risk-calculator-backup-'+localISODate()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+function importFullBackup(file){
+ if(!file)return;
+ if(file.size>2*1024*1024){alert('Backup file is too large. Maximum supported size is 2 MB.');return;}
+ const reader=new FileReader();
+ reader.onload=()=>{
+  try{
+   const backup=JSON.parse(String(reader.result||''));
+   if(!backup||backup.app!=='Trading Risk Calculator'||backup.schemaVersion!==1)throw new Error('This is not a supported calculator backup.');
+   if(!backup.calculator||!backup.calculator.settings||!Array.isArray(backup.calculator.instruments)||!backup.calculator.instruments.length)throw new Error('Calculator settings or instruments are missing.');
+   const cs=backup.calculator.settings;
+   if(!['amount','percent'].includes(cs.reserveMode)||!['amount','percent'].includes(cs.riskMode)||!['capital','reserve','risk','leverage'].every(k=>cs[k]!==undefined&&Number.isFinite(Number(cs[k]))))throw new Error('Calculator account settings are invalid.');
+   const validInstruments=backup.calculator.instruments.every(x=>x&&Number.isInteger(Number(x.id))&&Number(x.id)>0&&typeof x.name==='string'&&['long','short'].includes(x.side)&&['entry','sl'].every(k=>x[k]===''||Number.isFinite(Number(x[k]))));
+   if(!validInstruments)throw new Error('One or more instrument setups are invalid.');
+   if(!Array.isArray(backup.journal)||!backup.charges||typeof backup.charges!=='object'||!backup.guardrails||typeof backup.guardrails!=='object')throw new Error('Journal, charge settings or risk controls are missing.');
+   const validTrades=backup.journal.every(t=>t&&typeof t.date==='string'&&typeof t.symbol==='string'&&['long','short'].includes(t.side)&&Number.isInteger(Number(t.qty))&&Number(t.qty)>0&&Number.isFinite(Number(t.entry))&&Number(t.entry)>0&&Number.isFinite(Number(t.exit))&&Number(t.exit)>0);
+   const validCharges=['brokerage','stt','exchange','stamp','gst','sebi','slippage'].every(k=>backup.charges[k]!==undefined&&Number.isFinite(Number(backup.charges[k]))&&Number(backup.charges[k])>=0);
+   const validGuardrails=['dailyLossLimit','maxTradesPerDay'].every(k=>backup.guardrails[k]!==undefined&&Number.isFinite(Number(backup.guardrails[k]))&&Number(backup.guardrails[k])>=0);
+   if(!validTrades||!validCharges||!validGuardrails)throw new Error('Journal, charge profile or daily risk controls contain invalid values.');
+   if(!confirm('Restore this backup? It will replace the calculator settings, journal, charge profile and risk controls currently stored in this browser.'))return;
+   state=backup.calculator;nextId=Math.max(0,...state.instruments.map(x=>Number(x.id)||0))+1;
+   journalTrades=backup.journal;chargeSettings={...chargeSettings,...backup.charges};guardrails={...guardrails,...backup.guardrails};
+   persist();saveJournal();saveCharges();saveGuardrails();
+   renderSettings();renderInstruments();renderJournal();renderRiskDashboard();
+   Object.entries({chargeBrokerage:'brokerage',chargeStt:'stt',chargeExchange:'exchange',chargeStamp:'stamp',chargeGst:'gst',chargeSebi:'sebi',chargeSlippage:'slippage'}).forEach(([id,key])=>$(id).value=chargeSettings[key]);
+   $('dailyLossLimit').value=guardrails.dailyLossLimit;$('maxTradesPerDay').value=guardrails.maxTradesPerDay;
+   alert('Backup restored successfully.');
+  }catch(error){alert('Could not restore backup: '+error.message);}
+ };
+ reader.onerror=()=>alert('Could not read the selected backup file.');
+ reader.readAsText(file);
+}
+function bindSettings(){
+$('exportExcel').addEventListener('click', exportExcel);
+$('exportBackup').addEventListener('click',exportFullBackup);
+$('importBackupBtn').addEventListener('click',()=> $('importBackupFile').click());
+$('importBackupFile').addEventListener('change',e=>{importFullBackup(e.target.files&&e.target.files[0]);e.target.value='';});
+['capital','reserve','risk','leverage'].forEach(id=>$(id).addEventListener('input',refreshAll));
+['streakRiskPct','streakLossCount'].forEach(id=>$(id).addEventListener('input',renderStreakSimulator));
+$('reserveAmount').onclick=()=>setMode('reserve','amount');$('reservePercent').onclick=()=>setMode('reserve','percent');
+$('riskAmount').onclick=()=>setMode('risk','amount');$('riskPercent').onclick=()=>setMode('risk','percent');
+$('addInstrument').addEventListener('click',()=>{
+state.instruments.forEach(x=>x.open=false);
+const instrument={id:nextId++,name:'',entry:'',sl:'',side:'long',type:PAGE_MODE,multiplier:'1',pipSize:'',contractSize:'',quoteToInr:'',open:true};
+state.instruments.push(instrument);
+persist();
+renderInstruments();
+const last=$('instruments').lastElementChild;
+if(last){
+  try{last.scrollIntoView({behavior:'smooth',block:'start'});}catch(e){last.scrollIntoView();}
+  const nameInput=last.querySelector('[data-field="name"]');
+  if(nameInput){try{nameInput.focus({preventScroll:true});}catch(e){nameInput.focus();}}
+}
+});
+$('resetAll').onclick=()=>{if(confirm('Reset all settings and remove added instruments?')){state=cloneState(defaultState);nextId=2;persist();renderSettings();renderInstruments();}};
+}
+const requestedView=new URLSearchParams(window.location.search).get('view');
+const pathView=window.location.pathname.endsWith('/risk-dashboard.html')?'risk':window.location.pathname.endsWith('/trade-journal.html')?'journal':'calculator';
+const currentView=pathView!=='calculator'?pathView:(['calculator','risk','journal'].includes(requestedView)?requestedView:'calculator');
+document.body.dataset.pageView=currentView;
+const headerLink=document.querySelector('.header-link');
+if(currentView!=='calculator'){headerLink.href='index.html';headerLink.textContent='← Open position calculator';}else{headerLink.href='#calculator';headerLink.textContent='Go to calculator ↓';}
+const viewPanels={calculator:'panel-calculator',risk:'panel-risk',journal:'panel-journal'};
+Object.entries(viewPanels).forEach(([view,id])=>{$(id).hidden=view!==currentView;});
+document.querySelectorAll('[data-view-link]').forEach(link=>{
+ const active=link.dataset.viewLink===currentView;
+ link.classList.toggle('is-active',active);
+ if(active)link.setAttribute('aria-current','page');
+ else link.removeAttribute('aria-current');
+});
+if(currentView==='risk')document.title='Daily Risk Dashboard | Position Sizing Calculator';
+if(currentView==='journal')document.title='Trade Journal & Net P&L Analytics | Position Sizing Calculator';
+$('getStarted').addEventListener('click',()=>{$('calculator').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});});
+$('skipWelcome').addEventListener('click',()=>{$('welcomeHero').classList.add('is-hidden');});
+load();renderSettings();bindSettings();renderInstruments();renderStreakSimulator();
+loadJournal();loadCharges();bindCharges();loadGuardrails();bindRiskDashboard();$('journalDate').value=localISODate();$('saveJournalTrade').addEventListener('click',addJournalTrade);$('clearJournalForm').addEventListener('click',clearJournalForm);$('exportJournalCsv').addEventListener('click',exportJournalCsv);renderJournal();renderRiskDashboard();
+})();
+</script><section class="card" id="finance-calculators" style="max-width:1180px;margin:28px auto;padding:22px">
+<h2>Explore free finance & everyday calculators</h2>
+<p style="color:#9aabc0">Investment, loans, savings and everyday planning tools. All calculations run in your browser.</p>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:12px">
+<a class="header-link" href="gold-calculator.html">Gold Buy &amp; Sell Calculator</a><a class="header-link" href="silver-calculator.html">Silver Buy &amp; Sell Calculator</a><a class="header-link" href="xirr-calculator.html">XIRR Calculator</a><a class="header-link" href="sip-calculator.html">SIP Calculator</a><a class="header-link" href="step-up-sip-calculator.html">Step-up SIP Calculator</a><a class="header-link" href="lumpsum-calculator.html">Lumpsum Calculator</a><a class="header-link" href="swp-calculator.html">SWP Calculator</a><a class="header-link" href="cagr-calculator.html">CAGR Calculator</a><a class="header-link" href="fd-calculator.html">FD Calculator</a><a class="header-link" href="emi-calculator.html">Loan EMI Calculator</a><a class="header-link" href="home-loan-calculator.html">Home Loan Calculator</a><a class="header-link" href="loan-prepayment-calculator.html">Loan Prepayment Calculator</a><a class="header-link" href="age-calculator.html">Age Calculator</a>
+</div></section><footer class="site-footer" style="max-width:1000px;margin:28px auto 0;padding:18px;border-top:1px solid #26364f;color:#91a0b8;font-size:12px;line-height:2"><strong>Trading Risk Calculator</strong> · Independent educational tools, not financial advice.<br><a href="about.html">About</a> · <a href="contact.html">Contact</a> · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="risk-disclaimer.html">Risk disclaimer</a> · <a href="guides/position-sizing.html">Position sizing guide</a> · <a href="guides/risk-reward-ratio.html">Risk-reward guide</a> · <a href="guides/trading-costs.html">Trading charges guide</a> · <a href="guides/index.html">Guides &amp; Learning Centre</a></footer></body></html>
