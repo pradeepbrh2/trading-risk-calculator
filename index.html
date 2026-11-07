@@ -477,7 +477,14 @@ const marginPerLot=entry*unitMultiplier*fx/c.leverage;
 const marginQty=Math.floor((c.usable/marginPerLot)/step+1e-9)*step;
 const grossRiskQty=Math.floor((c.risk/riskPerLot)/step+1e-9)*step;
 const qtyStep=step;
-const riskQty=grossRiskQty;
+let riskQty=grossRiskQty;
+if(type!=='forex'){
+ while(riskQty>0){
+  const charges=estimateTradeCharges({side:inst.side,qty:riskQty*unitMultiplier,entry,exit:sl}).total;
+  if(riskQty*riskPerLot+charges<=c.risk)break;
+  riskQty=Math.max(0,Number((riskQty-qtyStep).toFixed(8)));
+ }
+}
 const qty=Math.max(0,Math.min(marginQty,riskQty));
 const units=qty*unitMultiplier;
 const position=entry*units*fx,margin=position/c.leverage,actualRisk=distance*units*fx;
@@ -533,17 +540,21 @@ const r=calcInstrument(inst),warning=card.querySelector('[data-warning]');
 if(r.error){warning.style.display='block';warning.textContent=r.error;card.querySelectorAll('[data-out]').forEach(x=>x.textContent='—');card.querySelector('[data-summary]').textContent='Needs input';return;}
 warning.style.display='none';
 const put=(key,value)=>{const node=card.querySelector(`[data-out="${key}"]`);if(node)node.textContent=value;};
-put('qty',r.qty.toLocaleString('en-IN'));put('reason',r.qty===0?'No unit fits both limits':r.riskQty<r.marginQty?'Quantity limited by risk budget':r.marginQty<r.riskQty?'Quantity limited by available margin':'Both limits give the same quantity');
-const stopCharges=r.qty?estimateTradeCharges({side:inst.side,qty:r.qty,entry:r.entry,exit:r.sl}).total:0;
-const target2Charges=r.qty?estimateTradeCharges({side:inst.side,qty:r.qty,entry:r.entry,exit:r.target2}).total:0;
-const target3Charges=r.qty?estimateTradeCharges({side:inst.side,qty:r.qty,entry:r.entry,exit:r.target3}).total:0;
+const qtyLabel=r.type==='equity'?r.qty.toLocaleString('en-IN'):(r.type==='index'?r.qty.toLocaleString('en-IN')+' lots ('+r.units.toLocaleString('en-IN')+' units)':r.qty.toFixed(2)+' lots ('+r.units.toLocaleString('en-IN')+' units)');
+put('qty',qtyLabel);put('reason',r.qty===0?'No lot/unit fits both limits':r.riskQty<r.marginQty?'Quantity limited by risk budget':r.marginQty<r.riskQty?'Quantity limited by available margin':'Both limits give the same quantity');
+const chargeUnits=r.type==='forex'?0:r.units;
+const stopCharges=r.qty&&chargeUnits?estimateTradeCharges({side:inst.side,qty:chargeUnits,entry:r.entry,exit:r.sl}).total:0;
+const target2Charges=r.qty&&chargeUnits?estimateTradeCharges({side:inst.side,qty:chargeUnits,entry:r.entry,exit:r.target2}).total:0;
+const target3Charges=r.qty&&chargeUnits?estimateTradeCharges({side:inst.side,qty:chargeUnits,entry:r.entry,exit:r.target3}).total:0;
+const priceFmt=n=>r.type==='forex'?Number(n).toFixed(5):money(n);
 put('actualRisk',money(r.actualRisk+stopCharges));put('position',money(r.position));put('margin',money(r.margin));put('left',money(r.c.capital-r.margin));
-put('usable',money(r.c.usable));put('power',money(r.c.buyingPower));put('marginQty',r.marginQty.toLocaleString('en-IN'));put('riskQty',r.riskQty.toLocaleString('en-IN'));
-put('target2',money(r.target2));put('target3',money(r.target3));
-put('breakeven',r.qty?money(calculateBreakEven(inst.side,r.qty,r.entry)):'—');
-put('profit2','Net after est. charges: '+money(r.actualRisk*2-target2Charges)+' · charges '+money(target2Charges));
-put('profit3','Net after est. charges: '+money(r.actualRisk*3-target3Charges)+' · charges '+money(target3Charges));
-card.querySelector('[data-summary]').textContent=r.qty+' units · '+money(r.actualRisk)+' risk';
+put('usable',money(r.c.usable));put('power',money(r.c.buyingPower));put('marginQty',r.marginQty.toLocaleString('en-IN')+(r.type==='equity'?' units':' lots'));put('riskQty',r.riskQty.toLocaleString('en-IN')+(r.type==='equity'?' units':' lots'));
+put('target2',priceFmt(r.target2));put('target3',priceFmt(r.target3));
+put('breakeven',r.qty&&r.type!=='forex'?money(calculateBreakEven(inst.side,r.units,r.entry)):'Not estimated for FX');
+put('profit2',(r.type==='forex'?'Gross, before FX costs: ':'Net after est. charges: ')+money(r.actualRisk*2-target2Charges)+' · charges '+money(target2Charges));
+put('profit3',(r.type==='forex'?'Gross, before FX costs: ':'Net after est. charges: ')+money(r.actualRisk*3-target3Charges)+' · charges '+money(target3Charges));
+if(r.type==='forex')put('reason',r.pipDistance.toFixed(1)+' pips to stop · manual quote→INR conversion');
+card.querySelector('[data-summary]').textContent=qtyLabel+' · '+money(r.actualRisk)+' risk';
 }
 function renderInstruments(){
 $('instruments').innerHTML=state.instruments.map(instrumentHTML).join('');
@@ -551,11 +562,18 @@ $('count').textContent=state.instruments.length+' instrument'+(state.instruments
 $('instruments').querySelectorAll('.instrument').forEach(card=>{
 const id=Number(card.dataset.id),inst=state.instruments.find(x=>x.id===id);
 card.addEventListener('toggle',()=>{inst.open=card.open;persist();},{capture:true});
-card.querySelectorAll('[data-field]').forEach(input=>input.addEventListener('input',()=>{
-inst[input.dataset.field]=input.value;
-if(input.dataset.field==='name')card.querySelector('.instrument-name').textContent=input.value||'New instrument';
-updateOne(card,inst);persist();
-}));
+card.querySelectorAll('[data-field]').forEach(input=>{
+ const update=()=>{
+  inst[input.dataset.field]=input.value;
+  if(input.dataset.field==='name')card.querySelector('.instrument-name').textContent=input.value||'New instrument';
+  if(input.dataset.field==='type'){
+   card.querySelector('[data-contract-fields]').hidden=input.value!=='index';
+   card.querySelector('[data-forex-fields]').hidden=input.value!=='forex';
+  }
+  updateOne(card,inst);persist();
+ };
+ input.addEventListener('input',update);input.addEventListener('change',update);
+});
 card.querySelectorAll('[data-side]').forEach(btn=>btn.addEventListener('click',()=>{
 inst.side=btn.dataset.side;card.querySelectorAll('[data-side]').forEach(b=>b.classList.toggle('active',b===btn));updateOne(card,inst);persist();
 }));
@@ -935,7 +953,7 @@ $('reserveAmount').onclick=()=>setMode('reserve','amount');$('reservePercent').o
 $('riskAmount').onclick=()=>setMode('risk','amount');$('riskPercent').onclick=()=>setMode('risk','percent');
 $('addInstrument').addEventListener('click',()=>{
 state.instruments.forEach(x=>x.open=false);
-const instrument={id:nextId++,name:'',entry:'',sl:'',side:'long',open:true};
+const instrument={id:nextId++,name:'',entry:'',sl:'',side:'long',type:'equity',multiplier:'1',pipSize:'0.0001',contractSize:'100000',quoteToInr:'1',open:true};
 state.instruments.push(instrument);
 persist();
 renderInstruments();
