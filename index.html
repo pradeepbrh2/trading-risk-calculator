@@ -904,7 +904,8 @@ $('exportExcel').addEventListener('click', exportExcel);
 $('exportBackup').addEventListener('click',exportFullBackup);
 $('importBackupBtn').addEventListener('click',()=> $('importBackupFile').click());
 $('importBackupFile').addEventListener('change',e=>{importFullBackup(e.target.files&&e.target.files[0]);e.target.value='';});
-['capital','reserve','risk','leverage'].forEach(id=>$(id).addEventListener('input',refreshAll));\n['streakRiskPct','streakLossCount'].forEach(id=>$(id).addEventListener('input',renderStreakSimulator));
+['capital','reserve','risk','leverage'].forEach(id=>$(id).addEventListener('input',refreshAll));
+['streakRiskPct','streakLossCount'].forEach(id=>$(id).addEventListener('input',renderStreakSimulator));
 $('reserveAmount').onclick=()=>setMode('reserve','amount');$('reservePercent').onclick=()=>setMode('reserve','percent');
 $('riskAmount').onclick=()=>setMode('risk','amount');$('riskPercent').onclick=()=>setMode('risk','percent');
 $('addInstrument').addEventListener('click',()=>{
