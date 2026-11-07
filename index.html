@@ -304,7 +304,7 @@ body[data-page-view="risk"] .header-link,body[data-page-view="journal"] .header-
 </section>
 
 <section class="card instrument-list"><div class="instrument-list-head"><div><h2>Instrument</h2><div class="hint" id="count">1 instrument</div></div><button class="add-btn" id="addInstrument" type="button">＋ Add instrument</button></div><div id="instruments"></div></section>
-<p class="hint" style="margin:0 0 14px">Instrument sizing currently uses INR price movement × whole-unit quantity. It is designed for share-style instruments; it does not convert forex pip values across quote currencies or apply futures/index contract multipliers. Do not use it for FX or index derivatives without independently calculating the correct unit value.</p>
+<p class="hint" style="margin:0 0 14px">Choose the correct instrument mode before sizing. Equity mode uses whole shares; index-derivative mode uses your manually entered current units-per-lot multiplier; Forex mode uses pip size, base units per lot and a manually entered quote-currency-to-INR rate. FX spreads, commissions, swaps and other broker costs are not included. Verify contract specifications and conversion rates with your broker; incorrect inputs produce incorrect risk estimates.</p>
 <div class="toolbar"><span class="hint">Your settings and instrument calculations are saved in this browser.</span><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="add-btn" id="exportExcel" type="button">↓ Download Excel (.xlsx)</button><button class="reset-btn" id="resetAll" type="button">Reset all</button></div></div>
 </div>
 <div class="workspace-panel" id="panel-risk">
@@ -631,14 +631,14 @@ async function exportExcel(){
     ws.columns = [
       { header: 'Instrument', key: 'instrument', width: 19 },
       { header: 'Direction', key: 'direction', width: 15 },
-      { header: 'Entry (₹)', key: 'entry', width: 14 },
-      { header: 'Stop-loss (₹)', key: 'sl', width: 16 },
+      { header: 'Entry price', key: 'entry', width: 14 },
+      { header: 'Stop-loss price', key: 'sl', width: 16 },
       { header: 'Max quantity', key: 'qty', width: 15 },
       { header: 'Planned risk (₹)', key: 'risk', width: 18 },
       { header: 'Position value (₹)', key: 'position', width: 20 },
       { header: 'Estimated margin (₹)', key: 'margin', width: 21 },
-      { header: 'Target 1:2 (₹)', key: 'target2', width: 16 },
-      { header: 'Target 1:3 (₹)', key: 'target3', width: 16 },
+      { header: 'Target 1:2 price', key: 'target2', width: 16 },
+      { header: 'Target 1:3 price', key: 'target3', width: 16 },
       { header: 'Gross profit 1:2 (₹)', key: 'profit2', width: 21 },
       { header: 'Gross profit 1:3 (₹)', key: 'profit3', width: 21 }
     ];
