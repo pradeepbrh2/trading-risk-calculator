@@ -489,7 +489,7 @@ const qty=Math.max(0,Math.min(marginQty,riskQty));
 const units=qty*unitMultiplier;
 const position=entry*units*fx,margin=position/c.leverage,actualRisk=distance*units*fx;
 const target2=entry+(inst.side==='long'?2:-2)*distance,target3=entry+(inst.side==='long'?3:-3)*distance;
-return {c,entry,sl,distance,marginQty,riskQty,qty,units,unitMultiplier,position,margin,actualRisk,target2,target3,type,fx,pipSize,pipDistance,qtyStep};
+return {c,entry,sl,distance,marginQty,riskQty,qty,units,unitMultiplier,position,margin,actualRisk,target2,target3,type,fx,pipSize,pipDistance,qtyStep,contractSize};
 }
 function instrumentHTML(inst){
 return `<details class="card instrument" data-id="${inst.id}"${inst.open?" open":""}>
@@ -503,7 +503,7 @@ return `<details class="card instrument" data-id="${inst.id}"${inst.open?" open"
 <div class="trade-fields" data-forex-fields ${inst.type==='forex'?'':'hidden'}>
 <div class="field"><label>PIP SIZE</label><input data-field="pipSize" type="number" min="0.00000001" step="any" value="${escapeAttr(inst.pipSize||'0.0001')}"><small class="hint">Commonly 0.0001; JPY pairs commonly 0.01. Confirm your broker's convention.</small></div>
 <div class="field"><label>CONTRACT SIZE (BASE UNITS / LOT)</label><input data-field="contractSize" type="number" min="1" step="1" value="${escapeAttr(inst.contractSize||'100000')}"></div>
-<div class="field"><label>QUOTE CURRENCY → INR RATE</label><input data-field="quoteToInr" type="number" min="0.00000001" step="any" value="${escapeAttr(inst.quoteToInr||'1')}"><small class="hint">Manual conversion: 1 unit of the pair's quote currency in INR. Example: USD/JPY needs JPY→INR, not USD→INR.</small></div>
+<div class="field"><label>QUOTE CURRENCY → INR RATE</label><input data-field="quoteToInr" type="number" min="0.00000001" step="any" value="${escapeAttr(inst.quoteToInr||'1')}"><small class="hint">Manual conversion: 1 unit of the pair's quote currency in INR. Example: USD/JPY needs JPY→INR, not USD→INR.</small></div><small class="hint">Forex charges, spread, swaps and commissions are not included. Confirm the pip size, contract size and conversion rate with your broker.</small>
 </div>
 <div class="side"><button type="button" data-side="long" class="${inst.side==='long'?'active':''}">Buy / Long</button><button type="button" data-side="short" class="${inst.side==='short'?'active':''}">Sell / Short</button></div>
 <div class="trade-fields">
@@ -512,7 +512,7 @@ return `<details class="card instrument" data-id="${inst.id}"${inst.open?" open"
 </div>
 <div class="warning" data-warning role="alert"></div>
 <div class="result">
-<div class="hero"><div class="k">MAXIMUM SHARES / UNITS</div><div class="qty" data-out="qty">—</div><div class="k" data-out="reason">Enter valid trade details</div></div>
+<div class="hero"><div class="k">MAXIMUM POSITION SIZE</div><div class="qty" data-out="qty">—</div><div class="k" data-out="reason">Enter valid trade details</div></div>
 <div class="stats">
 <div class="stat"><div class="k">Estimated stop-loss loss incl. charges</div><div class="v" data-out="actualRisk">—</div></div>
 <div class="stat"><div class="k">Position value</div><div class="v" data-out="position">—</div></div>
@@ -525,6 +525,7 @@ return `<details class="card instrument" data-id="${inst.id}"${inst.open?" open"
 <div class="row"><span>Buying power</span><strong data-out="power">—</strong></div>
 <div class="row"><span>Maximum quantity by margin</span><strong data-out="marginQty">—</strong></div>
 <div class="row"><span>Maximum quantity by risk</span><strong data-out="riskQty">—</strong></div>
+<div class="row" data-pip-value-row ${inst.type==='forex'?'':'hidden'}><span>Forex pip value per lot (INR)</span><strong data-out="pipValue">—</strong></div>
 </div>
 <div class="section">Break-even after estimated costs</div><div class="rows"><div class="row"><span>Approximate break-even exit price</span><strong data-out="breakeven">—</strong></div></div>
 <div class="section">Profit targets</div><div class="targets">
@@ -550,6 +551,8 @@ const priceFmt=n=>r.type==='forex'?Number(n).toFixed(5):money(n);
 put('actualRisk',money(r.actualRisk+stopCharges));put('position',money(r.position));put('margin',money(r.margin));put('left',money(r.c.capital-r.margin));
 put('usable',money(r.c.usable));put('power',money(r.c.buyingPower));put('marginQty',r.marginQty.toLocaleString('en-IN')+(r.type==='equity'?' units':' lots'));put('riskQty',r.riskQty.toLocaleString('en-IN')+(r.type==='equity'?' units':' lots'));
 put('target2',priceFmt(r.target2));put('target3',priceFmt(r.target3));
+const pipRow=card.querySelector('[data-pip-value-row]');if(pipRow)pipRow.hidden=r.type!=='forex';
+if(r.type==='forex')put('pipValue',money(r.pipSize*r.contractSize*r.fx));
 put('breakeven',r.qty&&r.type!=='forex'?money(calculateBreakEven(inst.side,r.units,r.entry)):'Not estimated for FX');
 put('profit2',(r.type==='forex'?'Gross, before FX costs: ':'Net after est. charges: ')+money(r.actualRisk*2-target2Charges)+' · charges '+money(target2Charges));
 put('profit3',(r.type==='forex'?'Gross, before FX costs: ':'Net after est. charges: ')+money(r.actualRisk*3-target3Charges)+' · charges '+money(target3Charges));
