@@ -233,6 +233,7 @@ body[data-page-view="risk"] .header-link,body[data-page-view="journal"] .header-
 .guardrail-status{padding:12px;border:1px solid var(--line);border-radius:10px;background:#0c1627;margin:10px 0;color:#c4d3e7;font-size:13px;line-height:1.6}
 .exposure-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:14px 0}
 .exposure-grid .journal-metric{min-width:0}
+.streak-metric{background:#0c1627;border:1px solid var(--line);border-radius:10px;padding:12px;min-width:0}.streak-metric strong{display:block;font-size:19px;margin-top:4px;overflow-wrap:anywhere}.streak-metric .k{font-size:11px;color:var(--muted)}
 .guardrail-warning{border-color:#8a5a29;color:#ffd49a}
 @media(max-width:700px){.exposure-grid{grid-template-columns:1fr 1fr}}
 </style><link rel="stylesheet" href="assets/site-nav.css?v=9">
@@ -290,7 +291,20 @@ body[data-page-view="risk"] .header-link,body[data-page-view="journal"] .header-
 <p class="hint">Percentage settings are calculated from total capital. These account-wide settings apply to every instrument below.</p>
 </section>
 
+<section class="card" id="drawdown-simulator" aria-labelledby="drawdown-title">
+ <h2 id="drawdown-title">Losing Streak Simulator</h2>
+ <p class="hint">See how repeated losses compound when you risk a fixed percentage of your remaining account balance on every trade.</p>
+ <div class="risk-control-grid">
+  <div class="field"><label for="streakRiskPct">RISK PER TRADE (%)</label><input id="streakRiskPct" type="number" min="0.1" max="100" step="0.1" value="2"></div>
+  <div class="field"><label for="streakLossCount">CONSECUTIVE LOSSES</label><input id="streakLossCount" type="number" min="1" max="100" step="1" value="10"></div>
+ </div>
+ <div class="exposure-grid" id="streakMetrics" aria-live="polite"></div>
+ <div id="streakSummary" class="guardrail-status" role="status" aria-live="polite"></div>
+ <p class="hint">Illustrative compounding only: assumes each loss equals the selected percentage of the current balance. It excludes gaps, slippage, fees, changing risk and deposits/withdrawals.</p>
+</section>
+
 <section class="card instrument-list"><div class="instrument-list-head"><div><h2>Instrument</h2><div class="hint" id="count">1 instrument</div></div><button class="add-btn" id="addInstrument" type="button">＋ Add instrument</button></div><div id="instruments"></div></section>
+<p class="hint" style="margin:0 0 14px">Instrument sizing currently uses INR price movement × whole-unit quantity. It is designed for share-style instruments; it does not convert forex pip values across quote currencies or apply futures/index contract multipliers. Do not use it for FX or index derivatives without independently calculating the correct unit value.</p>
 <div class="toolbar"><span class="hint">Your settings and instrument calculations are saved in this browser.</span><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="add-btn" id="exportExcel" type="button">↓ Download Excel (.xlsx)</button><button class="reset-btn" id="resetAll" type="button">Reset all</button></div></div>
 </div>
 <div class="workspace-panel" id="panel-risk">
@@ -529,6 +543,22 @@ updateOne(card,inst);
 if(typeof renderRiskDashboard==='function')renderRiskDashboard();
 }
 function refreshAll(){settingsFromUI();renderSettings();document.querySelectorAll('.instrument').forEach(card=>{const inst=state.instruments.find(x=>x.id===Number(card.dataset.id));if(inst)updateOne(card,inst);});persist();if(typeof renderRiskDashboard==='function')renderRiskDashboard();}
+function renderStreakSimulator(){
+ const capital=Math.max(0,Number($('capital').value)||0);
+ const riskPct=Number($('streakRiskPct').value),losses=Math.floor(Number($('streakLossCount').value));
+ const valid=Number.isFinite(riskPct)&&riskPct>0&&riskPct<=100&&Number.isInteger(losses)&&losses>=1&&losses<=100&&capital>0;
+ const metrics=$('streakMetrics'),summary=$('streakSummary');
+ if(!valid){metrics.innerHTML='';summary.textContent='Enter capital above zero, risk between 0.1% and 100%, and 1–100 consecutive losses.';return;}
+ const remaining=capital*Math.pow(1-riskPct/100,losses),drawdown=capital-remaining,drawdownPct=(1-Math.pow(1-riskPct/100,losses))*100;
+ const fmt=n=>'₹'+n.toLocaleString('en-IN',{maximumFractionDigits:2});
+ metrics.innerHTML=[
+  ['Starting capital',fmt(capital)],
+  ['Capital after '+losses+' losses',fmt(remaining)],
+  ['Total loss',fmt(drawdown)],
+  ['Account drawdown',drawdownPct.toFixed(2)+'%']
+ ].map(([k,v])=>'<div class="streak-metric"><span class="k">'+k+'</span><strong>'+v+'</strong></div>').join('');
+ summary.textContent='At '+riskPct+'% risk of the remaining balance per trade, '+losses+' consecutive full-risk losses would leave '+(100-drawdownPct).toFixed(2)+'% of the starting capital.';
+}
 function setMode(which,mode){state.settings[which+'Mode']=mode;renderSettings();persist();refreshAll();}
 
 
@@ -874,7 +904,7 @@ $('exportExcel').addEventListener('click', exportExcel);
 $('exportBackup').addEventListener('click',exportFullBackup);
 $('importBackupBtn').addEventListener('click',()=> $('importBackupFile').click());
 $('importBackupFile').addEventListener('change',e=>{importFullBackup(e.target.files&&e.target.files[0]);e.target.value='';});
-['capital','reserve','risk','leverage'].forEach(id=>$(id).addEventListener('input',refreshAll));
+['capital','reserve','risk','leverage'].forEach(id=>$(id).addEventListener('input',refreshAll));\n['streakRiskPct','streakLossCount'].forEach(id=>$(id).addEventListener('input',renderStreakSimulator));
 $('reserveAmount').onclick=()=>setMode('reserve','amount');$('reservePercent').onclick=()=>setMode('reserve','percent');
 $('riskAmount').onclick=()=>setMode('risk','amount');$('riskPercent').onclick=()=>setMode('risk','percent');
 $('addInstrument').addEventListener('click',()=>{
@@ -910,7 +940,7 @@ if(currentView==='risk')document.title='Daily Risk Dashboard | Position Sizing C
 if(currentView==='journal')document.title='Trade Journal & Net P&L Analytics | Position Sizing Calculator';
 $('getStarted').addEventListener('click',()=>{$('calculator').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});});
 $('skipWelcome').addEventListener('click',()=>{$('welcomeHero').classList.add('is-hidden');});
-load();renderSettings();bindSettings();renderInstruments();
+load();renderSettings();bindSettings();renderInstruments();renderStreakSimulator();
 loadJournal();loadCharges();bindCharges();loadGuardrails();bindRiskDashboard();$('journalDate').value=localISODate();$('saveJournalTrade').addEventListener('click',addJournalTrade);$('clearJournalForm').addEventListener('click',clearJournalForm);$('exportJournalCsv').addEventListener('click',exportJournalCsv);renderJournal();renderRiskDashboard();
 })();
 </script><section class="card" id="finance-calculators" style="max-width:1180px;margin:28px auto;padding:22px">
