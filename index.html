@@ -542,7 +542,7 @@ updateOne(card,inst);
 });
 if(typeof renderRiskDashboard==='function')renderRiskDashboard();
 }
-function refreshAll(){settingsFromUI();renderSettings();document.querySelectorAll('.instrument').forEach(card=>{const inst=state.instruments.find(x=>x.id===Number(card.dataset.id));if(inst)updateOne(card,inst);});persist();if(typeof renderRiskDashboard==='function')renderRiskDashboard();}
+function refreshAll(){settingsFromUI();renderSettings();document.querySelectorAll('.instrument').forEach(card=>{const inst=state.instruments.find(x=>x.id===Number(card.dataset.id));if(inst)updateOne(card,inst);});persist();if(typeof renderRiskDashboard==='function')renderRiskDashboard();if(typeof renderStreakSimulator==='function')renderStreakSimulator();}
 function renderStreakSimulator(){
  const capital=Math.max(0,Number($('capital').value)||0);
  const riskPct=Number($('streakRiskPct').value),losses=Math.floor(Number($('streakLossCount').value));
