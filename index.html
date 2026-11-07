@@ -452,27 +452,52 @@ if(!Number.isFinite(c.leverage)||c.leverage<=0)return 'Enter a valid leverage gr
 return '';
 }
 function calcInstrument(inst){
-const c=computedSettings(),entry=Number(inst.entry),sl=Number(inst.sl);
+const c=computedSettings(),entry=Number(inst.entry),sl=Number(inst.sl),type=inst.type||'equity';
 let err=validateGlobal(c);
-if(!err&&(!inst.name.trim()))err='Enter an instrument name.';
+if(!err&&!String(inst.name||'').trim())err='Enter an instrument name.';
 if(!err&&(!Number.isFinite(entry)||entry<=0||!Number.isFinite(sl)||sl<=0))err='Enter valid entry and stop-loss prices.';
 const distance=inst.side==='long'?entry-sl:sl-entry;
 if(!err&&distance<=0)err=inst.side==='long'?'For a long trade, stop-loss must be below entry.':'For a short trade, stop-loss must be above entry.';
+let multiplier=1,pipSize=0,contractSize=1,quoteToInr=1,step=1;
+if(type==='index'){
+ multiplier=Number(inst.multiplier);
+ if(!err&&(!Number.isFinite(multiplier)||multiplier<=0||!Number.isInteger(multiplier)))err='Enter the current whole-number contract multiplier (units per lot).';
+}else if(type==='forex'){
+ pipSize=Number(inst.pipSize);contractSize=Number(inst.contractSize);quoteToInr=Number(inst.quoteToInr);step=0.01;
+ if(!err&&(!Number.isFinite(pipSize)||pipSize<=0))err='Enter a valid pip size (for example 0.0001 or 0.01).';
+ if(!err&&(!Number.isFinite(contractSize)||contractSize<=0))err='Enter a valid base-currency contract size per lot.';
+ if(!err&&(!Number.isFinite(quoteToInr)||quoteToInr<=0))err='Enter the current quote-currency-to-INR conversion rate.';
+}
 if(err)return {error:err};
-const marginQty=whole(c.buyingPower/entry),grossRiskQty=whole(c.risk/distance);
-// Include the estimated round-trip costs at the stop-loss when enforcing the risk budget.
-let lo=0,hi=grossRiskQty;
-while(lo<hi){const mid=Math.ceil((lo+hi)/2),plannedRisk=mid*distance+estimateTradeCharges({side:inst.side,qty:mid,entry,exit:sl}).total;if(plannedRisk<=c.risk)lo=mid;else hi=mid-1;}
-const riskQty=lo,qty=Math.min(marginQty,riskQty);
-const position=qty*entry,margin=position/c.leverage,actualRisk=qty*distance;
+const unitMultiplier=type==='equity'?1:type==='index'?multiplier:contractSize;
+const fx=type==='forex'?quoteToInr:1;
+const pipDistance=type==='forex'?distance/pipSize:0;
+const riskPerLot=distance*unitMultiplier*fx;
+const marginPerLot=entry*unitMultiplier*fx/c.leverage;
+const marginQty=Math.floor((c.usable/marginPerLot)/step+1e-9)*step;
+const grossRiskQty=Math.floor((c.risk/riskPerLot)/step+1e-9)*step;
+const qtyStep=step;
+const riskQty=grossRiskQty;
+const qty=Math.max(0,Math.min(marginQty,riskQty));
+const units=qty*unitMultiplier;
+const position=entry*units*fx,margin=position/c.leverage,actualRisk=distance*units*fx;
 const target2=entry+(inst.side==='long'?2:-2)*distance,target3=entry+(inst.side==='long'?3:-3)*distance;
-return {c,entry,sl,distance,marginQty,riskQty,qty,position,margin,actualRisk,target2,target3};
+return {c,entry,sl,distance,marginQty,riskQty,qty,units,unitMultiplier,position,margin,actualRisk,target2,target3,type,fx,pipSize,pipDistance,qtyStep};
 }
 function instrumentHTML(inst){
 return `<details class="card instrument" data-id="${inst.id}"${inst.open?" open":""}>
 <summary><span class="instrument-name">${escapeHTML(inst.name||'New instrument')}</span><span class="summary-meta" data-summary>Needs input</span></summary>
 <div class="instrument-body">
 <div class="instrument-top"><div class="field"><label>INSTRUMENT NAME</label><input data-field="name" type="text" maxlength="40" placeholder="e.g. INFY, NIFTY, RELIANCE" value="${escapeAttr(inst.name)}"></div><button class="remove" type="button" data-action="remove">Remove</button></div>
+<div class="field"><label>INSTRUMENT TYPE</label><select data-field="type"><option value="equity" ${(inst.type||'equity')==='equity'?'selected':''}>Indian equity / share</option><option value="index" ${inst.type==='index'?'selected':''}>Index derivative (lots)</option><option value="forex" ${inst.type==='forex'?'selected':''}>Forex (manual conversion)</option></select></div>
+<div class="trade-fields" data-contract-fields ${inst.type==='index'?'':'hidden'}>
+<div class="field"><label>CONTRACT MULTIPLIER (UNITS / LOT)</label><input data-field="multiplier" type="number" min="1" step="1" value="${escapeAttr(inst.multiplier||'1')}"><small class="hint">Enter the current exchange/broker contract quantity for one lot.</small></div>
+</div>
+<div class="trade-fields" data-forex-fields ${inst.type==='forex'?'':'hidden'}>
+<div class="field"><label>PIP SIZE</label><input data-field="pipSize" type="number" min="0.00000001" step="any" value="${escapeAttr(inst.pipSize||'0.0001')}"><small class="hint">Commonly 0.0001; JPY pairs commonly 0.01. Confirm your broker's convention.</small></div>
+<div class="field"><label>CONTRACT SIZE (BASE UNITS / LOT)</label><input data-field="contractSize" type="number" min="1" step="1" value="${escapeAttr(inst.contractSize||'100000')}"></div>
+<div class="field"><label>QUOTE CURRENCY → INR RATE</label><input data-field="quoteToInr" type="number" min="0.00000001" step="any" value="${escapeAttr(inst.quoteToInr||'1')}"><small class="hint">Manual conversion: 1 unit of the pair's quote currency in INR. Example: USD/JPY needs JPY→INR, not USD→INR.</small></div>
+</div>
 <div class="side"><button type="button" data-side="long" class="${inst.side==='long'?'active':''}">Buy / Long</button><button type="button" data-side="short" class="${inst.side==='short'?'active':''}">Sell / Short</button></div>
 <div class="trade-fields">
 <div class="field"><label>ENTRY PRICE (₹)</label><input data-field="entry" type="number" min="0" step="any" placeholder="Entry price" value="${escapeAttr(inst.entry)}"></div>
